@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ドキドキ！どはでインターバルタイマー</title>
   <meta name="description" content="小学校の授業や家庭学習で使える、ド派手な演出と音で楽しむワクワク・ドキドキのインターバルタイマーです。">
-  <!-- Google Fonts: Orbitron (数字用), M PLUS Rounded 1c (子供向け日本語用), Outfit (UI用) -->
+  <!-- Google Fonts: Noto Serif JP (エヴァ特太明朝用), Orbitron (数字用), M PLUS Rounded 1c (子供向け日本語用), Outfit (UI用) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Orbitron:wght@600;900&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+JP:wght@900&family=Orbitron:wght@600;900&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
   
   <style>
     /* ==========================================================================
@@ -16,34 +16,33 @@
        ========================================================================== */
 
     :root {
-      --bg-color: #050814;
-      --bg-gradient: radial-gradient(circle at center, #0c122c 0%, #050814 100%);
-      --card-bg: rgba(13, 20, 44, 0.7);
-      --card-border: rgba(255, 255, 255, 0.08);
+      --bg-color: #000000;
+      --bg-gradient: radial-gradient(circle at center, #0e0503 0%, #000000 100%);
+      --card-bg: rgba(12, 6, 4, 0.85);
+      --card-border: rgba(255, 85, 0, 0.25);
       --text-primary: #ffffff;
-      --text-secondary: #8f9cae;
-      --text-muted: #5e6b7c;
+      --text-secondary: #a09080; /* エヴァ調のくすんだベージュ */
+      --text-muted: #5c4e46;
       
-      /* ネオンカラー */
-      --neon-cyan: #00f2fe;
-      --neon-cyan-glow: rgba(0, 242, 254, 0.35);
-      --neon-magenta: #ff2a85;
-      --neon-magenta-glow: rgba(255, 42, 133, 0.35);
-      --neon-yellow: #ffd200;
-      --neon-yellow-glow: rgba(255, 210, 0, 0.35);
-      --neon-green: #00e676;
-      --neon-green-glow: rgba(0, 230, 118, 0.35);
+      /* エヴァ警告カラー */
+      --eva-orange: #ff5500;
+      --eva-orange-glow: rgba(255, 85, 0, 0.45);
+      --eva-red: #ff003c;
+      --eva-red-glow: rgba(255, 0, 60, 0.55);
+      --eva-yellow: #ffd200;
+      --eva-green: #00ff66; /* 外部電源接続時の蛍光グリーン */
       
-      --active-color: var(--neon-cyan);
-      --active-glow: var(--neon-cyan-glow);
+      --active-color: var(--eva-orange);
+      --active-glow: var(--eva-orange-glow);
       
       --font-timer: 'Orbitron', monospace;
-      --font-ui: 'Outfit', 'M PLUS Rounded 1c', sans-serif;
+      --font-eva: 'Noto Serif JP', serif; /* 極太明朝体 */
+      --font-ui: 'M PLUS Rounded 1c', sans-serif;
       
-      --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      --border-radius-lg: 24px;
-      --border-radius-md: 16px;
-      --border-radius-sm: 8px;
+      --transition-smooth: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --border-radius-lg: 4px; /* 直角に近いエヴァUI */
+      --border-radius-md: 4px;
+      --border-radius-sm: 2px;
     }
 
     * {
@@ -156,13 +155,12 @@
     }
 
     .logo-text {
-      font-size: 1.6rem;
+      font-size: 1.5rem;
       font-weight: 900;
-      background: linear-gradient(45deg, #00f2fe, #ff2a85, #ffd200);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+      font-family: var(--font-eva);
+      color: var(--eva-orange);
+      letter-spacing: 2px;
+      text-shadow: 0 0 15px var(--eva-orange-glow);
     }
 
     .header-controls {
@@ -215,17 +213,17 @@
 
     /* タイマー画面 */
     .timer-section {
-      background: rgba(8, 14, 38, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--card-bg);
+      border: 2px solid var(--eva-orange);
       border-radius: var(--border-radius-lg);
-      padding: 48px;
+      padding: 40px;
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(20px);
-      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 85, 0, 0.15);
       transition: var(--transition-smooth);
     }
 
@@ -237,27 +235,29 @@
 
     .badge {
       display: inline-block;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 0.9rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 14px;
+      border-radius: 0;
+      font-size: 0.85rem;
+      font-weight: 900;
+      font-family: var(--font-eva);
+      letter-spacing: 2px;
+      background: #000000;
+      border: 1.5px solid var(--active-color);
       color: var(--active-color);
-      box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+      box-shadow: 0 0 10px var(--active-glow);
       transition: var(--transition-smooth);
+      animation: alert-flash 1.2s infinite alternate;
     }
 
     .task-title {
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: 900;
-      margin-top: 12px;
-      letter-spacing: -0.5px;
+      font-family: var(--font-eva);
+      margin-top: 14px;
+      letter-spacing: 2px;
       transition: var(--transition-smooth);
-      color: var(--text-primary);
-      text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+      color: #ffffff;
+      text-shadow: 0 0 15px var(--active-glow);
     }
 
     /* 巨大タイマー */
@@ -316,9 +316,9 @@
       font-family: var(--font-timer);
       font-size: 5.6rem;
       font-weight: 900;
-      color: var(--text-primary);
-      text-shadow: 0 0 20px var(--active-glow), 0 0 40px rgba(0,0,0,0.5);
-      letter-spacing: -2px;
+      color: var(--active-color);
+      text-shadow: 0 0 20px var(--active-glow), 0 0 40px rgba(0,0,0,0.8);
+      letter-spacing: -1px;
       line-height: 1;
     }
 
@@ -505,20 +505,23 @@
 
     .settings-card {
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
+      border: 1px solid var(--eva-orange);
       border-radius: var(--border-radius-lg);
       padding: 28px;
       backdrop-filter: blur(15px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
     }
 
     .card-title {
-      font-size: 1.25rem;
+      font-size: 1.2rem;
+      font-family: var(--font-eva);
       font-weight: 700;
+      color: var(--eva-orange);
       margin-bottom: 20px;
-      border-left: 4px solid var(--neon-cyan);
+      border-left: 4px solid var(--eva-orange);
       padding-left: 12px;
       line-height: 1;
+      letter-spacing: 1px;
     }
 
     /* プリセット */
@@ -936,22 +939,24 @@
       align-items: center;
       gap: 8px;
       padding: 6px 14px;
-      border-radius: 30px;
+      border-radius: 0;
       font-size: 0.9rem;
+      font-family: var(--font-eva);
       font-weight: 700;
       transition: var(--transition-smooth);
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.04);
+      background: rgba(255, 85, 0, 0.03);
+      border: 1.5px solid rgba(255, 85, 0, 0.15);
     }
     
     .timeline-step.past {
-      opacity: 0.5;
-      background: rgba(255, 255, 255, 0.01);
+      opacity: 0.4;
+      background: rgba(0, 0, 0, 0.3);
       text-decoration: line-through;
+      border-color: rgba(255, 85, 0, 0.05);
     }
     
     .timeline-step.active {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 85, 0, 0.12);
       border-color: var(--active-color);
       color: var(--text-primary);
       box-shadow: 0 0 15px var(--active-glow);
@@ -965,8 +970,8 @@
     .step-indicator {
       width: 20px;
       height: 20px;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.15);
+      border-radius: 0;
+      background: rgba(255, 85, 0, 0.15);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -977,7 +982,7 @@
     
     .timeline-step.active .step-indicator {
       background: var(--active-color);
-      color: #050814;
+      color: #000000;
       font-weight: 900;
       box-shadow: 0 0 8px var(--active-color);
     }
@@ -988,20 +993,20 @@
     }
     
     .timeline-step.past .step-indicator {
-      background: rgba(255, 255, 255, 0.25);
-      color: var(--text-primary);
+      background: rgba(255, 85, 0, 0.05);
+      color: var(--text-secondary);
     }
     
     .timeline-connector {
       height: 2px;
       width: 24px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 1px;
+      background: rgba(255, 85, 0, 0.15);
+      border-radius: 0;
     }
     
     .timeline-connector.past {
       background: var(--active-color);
-      opacity: 0.4;
+      opacity: 0.5;
     }
 
     /* --------------------------------------------------------------------------
@@ -1070,20 +1075,21 @@
     body.fullscreen-mode .badge {
       font-size: 1.8rem;
       padding: 10px 32px;
-      border-radius: 40px;
-      background: rgba(255, 255, 255, 0.08);
-      border-color: var(--active-color);
+      border-radius: 0;
+      background: #000000;
+      border: 2px solid var(--active-color);
       box-shadow: 0 0 20px var(--active-glow);
     }
 
     body.fullscreen-mode .task-title {
-      font-size: clamp(3.2rem, 7.5vh, 6.2rem); /* 縦幅基準の極大フォント */
+      font-size: clamp(3.2rem, 7.5vh, 6.2rem);
+      font-family: var(--font-eva);
       margin-top: 32px;
       line-height: 1.2;
       text-align: left;
       width: 100%;
       word-break: break-all;
-      text-shadow: 0 0 30px var(--active-glow), 0 0 60px rgba(255, 255, 255, 0.15);
+      text-shadow: 0 0 35px var(--active-glow);
     }
 
     /* 全画面時のタイムライン */
@@ -1160,15 +1166,13 @@
     }
 
     /* --------------------------------------------------------------------------
-       アメコミ風カートゥーン爆発ポップアップ
+       エヴァ風警告ポップアップ
        -------------------------------------------------------------------------- */
-    .cartoon-explosion {
+    .eva-alert-popup {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
-      width: 440px;
-      height: 440px;
       z-index: 9999;
       pointer-events: none;
       display: flex;
@@ -1177,111 +1181,157 @@
       opacity: 0;
     }
 
-    .cartoon-explosion.active {
-      animation: pop-cartoon 1.3s cubic-bezier(0.175, 0.885, 0.32, 1.35) forwards;
+    .eva-alert-popup.active {
+      animation: pop-eva-alert 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
     }
 
-    @keyframes pop-cartoon {
+    @keyframes pop-eva-alert {
       0% {
-        transform: translate(-50%, -50%) scale(0) rotate(-15deg);
+        transform: translate(-50%, -50%) scale(0.4);
         opacity: 0;
       }
+      8% {
+        transform: translate(-50%, -50%) scale(1.1);
+        opacity: 1;
+      }
       12% {
-        transform: translate(-50%, -50%) scale(1.15) rotate(5deg);
+        transform: translate(-50%, -50%) scale(1.0);
         opacity: 1;
       }
-      18% {
-        transform: translate(-50%, -50%) scale(1.0) rotate(0deg);
-        opacity: 1;
-      }
-      82% {
-        transform: translate(-50%, -50%) scale(1.0) rotate(0deg);
+      85% {
+        transform: translate(-50%, -50%) scale(1.0);
         opacity: 1;
       }
       100% {
-        transform: translate(-50%, -50%) scale(0.6) rotate(15deg);
+        transform: translate(-50%, -50%) scale(0.8);
         opacity: 0;
       }
     }
 
-    .explosion-svg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      filter: drop-shadow(0 15px 0 rgba(0,0,0,0.35));
-    }
-
-    .spike-bg {
-      fill: #ff2a85;
-      stroke: #050814;
-      stroke-width: 12px;
-      stroke-linejoin: round;
-      animation: spin-bg 25s linear infinite;
-      transform-origin: 200px 200px;
-    }
-
-    .spike-fg {
-      fill: #ffd200;
-      stroke: #050814;
-      stroke-width: 10px;
-      stroke-linejoin: round;
-      animation: spin-fg 18s linear infinite reverse;
-      transform-origin: 200px 200px;
-    }
-
-    @keyframes spin-bg {
-      100% { transform: rotate(360deg); }
-    }
-    @keyframes spin-fg {
-      100% { transform: rotate(360deg); }
-    }
-
-    .explosion-text {
+    .emergency-hex-container {
       position: relative;
-      font-family: 'M PLUS Rounded 1c', var(--font-ui);
-      font-weight: 900;
-      font-size: 3.8rem;
-      font-size: clamp(2.2rem, 8vw, 4.2rem);
+      width: 440px;
+      height: 380px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      filter: drop-shadow(0 0 25px rgba(255, 0, 60, 0.75));
+    }
+
+    .emergency-hex {
+      position: relative;
+      width: 320px;
+      height: 184.8px;
+      background-color: var(--eva-red);
+      margin: 92.4px 0;
+      border-left: solid 8px #ffffff;
+      border-right: solid 8px #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       color: #ffffff;
-      text-align: center;
-      z-index: 10;
-      text-shadow: 
-        -4px -4px 0 #050814,  
-         4px -4px 0 #050814,
-        -4px  4px 0 #050814,
-         4px  4px 0 #050814,
-        -8px  8px 0 #050814,
-         0px  8px 0 #050814,
-         8px  8px 0 #050814;
-      letter-spacing: -1px;
-      animation: text-pulse 0.35s ease-in-out infinite alternate;
+      font-family: var(--font-eva);
+      box-shadow: 0 0 0 10px var(--eva-red);
+    }
+
+    .emergency-hex:before,
+    .emergency-hex:after {
+      content: "";
+      position: absolute;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-left: 168px solid transparent;
+      border-right: 168px solid transparent;
+    }
+
+    .emergency-hex:before {
+      bottom: 184.8px;
+      border-bottom: 92.4px solid var(--eva-red);
+    }
+
+    .emergency-hex:after {
+      top: 184.8px;
+      border-top: 92.4px solid var(--eva-red);
+    }
+
+    .hex-text-small {
+      font-family: var(--font-timer);
+      font-size: 0.9rem;
+      letter-spacing: 4px;
+      font-weight: 700;
+      opacity: 0.95;
+      color: #ffffff;
+    }
+
+    .hex-text-large {
+      font-size: 3.2rem;
+      font-weight: 900;
+      margin: 8px 0;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.4);
       white-space: nowrap;
+      color: #ffffff;
     }
 
-    @keyframes text-pulse {
-      0% { transform: scale(0.95) rotate(-3deg); }
-      100% { transform: scale(1.05) rotate(3deg); }
+    /* 電源ステータス表示 */
+    .power-status-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+      font-family: var(--font-timer);
+      border: 1px solid rgba(255, 85, 0, 0.25);
+      padding: 6px 20px;
+      background: rgba(0,0,0,0.5);
+      border-radius: 0;
+      width: 100%;
+      max-width: 90%;
     }
 
-    .explosion-flash {
-      position: fixed;
-      top: -100vh;
-      left: -100vw;
-      width: 300vw;
-      height: 300vh;
-      background: #ffffff;
-      opacity: 0;
-      z-index: 9998;
-      pointer-events: none;
+    .power-status-title {
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      letter-spacing: 3px;
+      margin-bottom: 2px;
+      font-weight: 700;
     }
 
-    .cartoon-explosion.active .explosion-flash {
-      animation: flash-screen 0.22s ease-out forwards;
+    .power-status-value {
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      color: var(--eva-green);
+      text-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    @keyframes flash-screen {
-      0% { opacity: 0.85; }
-      100% { opacity: 0; }
+    /* 内部電源使用中はオレンジ〜赤点滅 */
+    body.internal-battery-mode .power-status-value {
+      color: var(--eva-orange);
+      text-shadow: 0 0 10px var(--eva-orange-glow);
+      animation: alert-flash 1s infinite alternate;
+    }
+
+    @keyframes alert-flash {
+      0% { opacity: 0.35; }
+      100% { opacity: 1; }
+    }
+
+    /* ハザードストライプ（警告縞） */
+    .hazard-stripe {
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--eva-yellow),
+        var(--eva-yellow) 12px,
+        #000000 12px,
+        #000000 24px
+      );
+      height: 10px;
+      border-bottom: 2.5px solid #000000;
     }
 
     /* メディアクエリ */
@@ -1366,6 +1416,7 @@
     <main class="app-main">
       <!-- タイマー表示セクション -->
       <section class="timer-section" id="timer-section">
+        <div class="hazard-stripe" style="margin-top: -40px; margin-bottom: 30px; width: calc(100% + 80px);"></div>
         <!-- 進行中のタスク表示 -->
         <div class="current-task-display">
           <span class="badge" id="task-badge" data-kanji="じゅんび中" data-hiragana="じゅんびちゅう">じゅんび中</span>
@@ -1411,6 +1462,15 @@
           </div>
         </div>
 
+        <!-- 電源供給システムステータス -->
+        <div class="power-status-indicator">
+          <div class="power-status-title">POWER SUPPLY SYSTEM</div>
+          <div class="power-status-value" id="power-status-value">
+            <span class="power-icon">🔌</span>
+            <span id="power-status-text">EXTERNAL POWER CONNECTED</span>
+          </div>
+        </div>
+
         <!-- 進行タイムライン -->
         <div id="timeline-container" class="timeline-container">
           <!-- JavaScriptで動的に生成 -->
@@ -1451,6 +1511,7 @@
       <section class="settings-section" id="settings-section">
         <!-- プリセット選択 -->
         <div class="settings-card presets-card">
+          <div class="hazard-stripe" style="margin-top: -28px; margin-bottom: 20px; width: calc(100% + 56px); margin-left: -28px;"></div>
           <h3 class="card-title" data-kanji="おすすめセット" data-hiragana="おすすめセット">おすすめセット</h3>
           <div class="preset-buttons">
             <button class="preset-btn" data-preset="standard">
@@ -1486,6 +1547,7 @@
 
         <!-- タイマースケジュール設定 -->
         <div class="settings-card schedule-card">
+          <div class="hazard-stripe" style="margin-top: -28px; margin-bottom: 20px; width: calc(100% + 56px); margin-left: -28px;"></div>
           <h3 class="card-title" data-kanji="じかんの順番（じゅんばん）" data-hiragana="じかんのじゅんばん">じかんの順番（じゅんばん）</h3>
           
           <!-- スケジュールリスト -->
@@ -1554,6 +1616,7 @@
 
         <!-- オプション設定 -->
         <div class="settings-card options-card">
+          <div class="hazard-stripe" style="margin-top: -28px; margin-bottom: 20px; width: calc(100% + 56px); margin-left: -28px;"></div>
           <h3 class="card-title" data-kanji="オプション" data-hiragana="オプション">オプション</h3>
           <div class="option-items">
             <label class="option-switch">
@@ -1688,7 +1751,11 @@
         countdownSoundSwitch: document.getElementById('countdown-sound-switch'),
         chimeSelect: document.getElementById('chime-select'),
         timelineContainer: document.getElementById('timeline-container'),
-        fsHintOverlay: document.getElementById('fs-hint-overlay')
+        fsHintOverlay: document.getElementById('fs-hint-overlay'),
+        powerStatusText: document.getElementById('power-status-text'),
+        powerStatusValue: document.getElementById('power-status-value'),
+        evaAlertPopup: document.getElementById('eva-alert-popup'),
+        evaAlertText: document.getElementById('eva-alert-text')
       };
     }
 
@@ -1716,10 +1783,6 @@
       
       resizeCanvases();
       window.addEventListener('resize', resizeCanvases);
-      
-      for (let i = 0; i < 8; i++) {
-        ambientOrbs.push(createAmbientOrb());
-      }
     }
 
     function resizeCanvases() {
@@ -1897,10 +1960,53 @@
       playTone(freq, dur, 'sine', 0.6);
     }
 
+    // 🚨 エヴァ風警告ブザー音 (システムアラーム)
+    function playSystemWarningBuzzer(duration = 0.4) {
+      if (isMuted || volume === 0) return;
+      try {
+        initAudio();
+        const baseFreq = 220; // 無骨な警告低周波
+        
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc1.type = 'sawtooth';
+        osc1.frequency.setValueAtTime(baseFreq, audioCtx.currentTime);
+        
+        osc2.type = 'sawtooth';
+        osc2.frequency.setValueAtTime(baseFreq + 4, audioCtx.currentTime); // わずかにデチューン
+        
+        gainNode.gain.setValueAtTime(0.4 * volume, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.4 * volume, audioCtx.currentTime + duration - 0.05);
+        gainNode.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        
+        osc1.connect(gainNode);
+        osc2.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        osc1.start();
+        osc2.start();
+        osc1.stop(audioCtx.currentTime + duration);
+        osc2.stop(audioCtx.currentTime + duration);
+      } catch (e) {
+        console.error("警告ブザー再生エラー:", e);
+      }
+    }
+
+    function playEvangellionBuzzerProgress() {
+      playSystemWarningBuzzer(0.38);
+      setTimeout(() => playSystemWarningBuzzer(0.38), 500);
+      setTimeout(() => playSystemWarningBuzzer(0.38), 1000);
+    }
+
     // 豪華な効果音（リニューアル）
     function playTransitionSound(type) {
       debugLog("🎵 効果音再生: " + type);
       switch (type) {
+        case 'eva-buzzer':
+          playEvangellionBuzzerProgress();
+          break;
         case 'fanfare-heroic':
           playHeroicFanfare();
           break;
@@ -1914,7 +2020,7 @@
           playMagicSparkleSound();
           break;
         default:
-          playHeroicFanfare();
+          playEvangellionBuzzerProgress();
       }
     }
 
@@ -2034,68 +2140,92 @@
       }, 350);
     }
 
-    function createAmbientOrb() {
-      return {
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        size: Math.random() * 350 + 200, // 劇的に大きくして大画面に美しく広げる
-        vx: (Math.random() - 0.5) * 0.2, // ゆっくりと優雅に動かす
-        vy: (Math.random() - 0.5) * 0.2,
-        hue: Math.random() * 360,
-        opacity: Math.random() * 0.10 + 0.03 // 大画面で眩しくなりすぎないよう透過度を調整
-      };
+    // --------------------------------------------------------------------------
+    // 背景の動的ハニカム（六角形）グリッドと警告テキストスクロール
+    // --------------------------------------------------------------------------
+    let textScrollX = 0;
+    
+    function drawHoneycombGrid(ctx, w, h, size) {
+      ctx.save();
+      const isRedAlert = remainingSeconds <= 10 && !isPaused;
+      ctx.strokeStyle = isRedAlert ? 'rgba(255, 0, 60, 0.12)' : 'rgba(255, 85, 0, 0.05)';
+      ctx.lineWidth = 1;
+      
+      const hexWidth = size * Math.sqrt(3);
+      const hexHeight = size * 2;
+      
+      for (let y = -hexHeight; y < h + hexHeight; y += hexHeight * 0.75) {
+        let xOffset = 0;
+        if (Math.floor(y / (hexHeight * 0.75)) % 2 !== 0) {
+          xOffset = hexWidth / 2;
+        }
+        for (let x = -hexWidth; x < w + hexWidth; x += hexWidth) {
+          drawHexagon(ctx, x + xOffset, y, size);
+        }
+      }
+      ctx.restore();
     }
 
-    function updateAmbientOrbs() {
-      ambientOrbs.forEach(orb => {
-        orb.x += orb.vx;
-        orb.y += orb.vy;
-        
-        if (orb.x < -orb.size) orb.x = window.innerWidth + orb.size;
-        if (orb.x > window.innerWidth + orb.size) orb.x = -orb.size;
-        if (orb.y < -orb.size) orb.y = window.innerHeight + orb.size;
-        if (orb.y > window.innerHeight + orb.size) orb.y = -orb.size;
-      });
+    function drawHexagon(ctx, x, y, size) {
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;
+        ctx.lineTo(x + size * Math.sin(angle), y + size * Math.cos(angle));
+      }
+      ctx.closePath();
+      ctx.stroke();
     }
 
-    function drawAmbientOrbs() {
+    function drawWarningScrollTexts(ctx, w, h) {
+      ctx.save();
+      const fontSize = 110;
+      ctx.font = `900 ${fontSize}px var(--font-eva), sans-serif`;
+      
+      const isRedAlert = remainingSeconds <= 10 && !isPaused;
+      ctx.fillStyle = isRedAlert ? 'rgba(255, 0, 60, 0.025)' : 'rgba(255, 85, 0, 0.008)';
+      ctx.textBaseline = 'middle';
+      
+      textScrollX -= 0.6;
+      if (textScrollX < -w * 2.5) textScrollX = 0;
+      
+      const text = isRedAlert ? "WARNING   EMERGENCY   活動限界   WARNING   EMERGENCY   活動限界   " : "SYSTEM ACTIVE   MONITORING   INTERNAL SYSTEM   MONITORING   ";
+      
+      ctx.fillText(text, textScrollX, h * 0.18);
+      ctx.fillText(text, -textScrollX - w, h * 0.82);
+      ctx.restore();
+    }
+
+    function drawAmbientBackground() {
       if (!ambientCtx) return;
-      ambientCtx.clearRect(0, 0, ambientCanvas.width / (window.devicePixelRatio || 1), ambientCanvas.height / (window.devicePixelRatio || 1));
+      const scale = window.devicePixelRatio || 1;
+      const w = ambientCanvas.width / scale;
+      const h = ambientCanvas.height / scale;
       
-      ambientCtx.save();
-      ambientCtx.globalCompositeOperation = 'screen'; // スクリーンブレンドでネオンカラーを鮮やかに
+      ambientCtx.clearRect(0, 0, w, h);
       
-      ambientOrbs.forEach(orb => {
-        const grad = ambientCtx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.size);
-        grad.addColorStop(0, 'hsla(' + orb.hue + ', 80%, 60%, ' + orb.opacity + ')');
-        grad.addColorStop(1, 'rgba(5, 8, 20, 0)');
-        
-        ambientCtx.beginPath();
-        ambientCtx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
-        ambientCtx.fillStyle = grad;
-        ambientCtx.fill();
-      });
+      // ハニカムグリッド描画
+      drawHoneycombGrid(ambientCtx, w, h, 28);
       
-      ambientCtx.restore();
+      // 流れる警告文字描画
+      drawWarningScrollTexts(ambientCtx, w, h);
     }
 
     function spawnSpark(x, y, colorClass) {
-      let color = '#00f2fe';
-      if (colorClass === 'theme-magenta') color = '#ff2a85';
+      let color = '#ff5500';
+      if (colorClass === 'theme-magenta') color = '#ff003c';
       if (colorClass === 'theme-yellow') color = '#ffd200';
-      if (colorClass === 'theme-green') color = '#00e676';
+      if (colorClass === 'theme-green') color = '#00ff66';
       
       const angle = Math.random() * Math.PI * 2;
-      const speed = Math.random() * 2.5 + 0.8;
+      const speed = Math.random() * 3 + 1;
       
       particles.push({
-        type: Math.random() < 0.35 ? 'star' : 'spark', // 35%の確率で星、他は通常のスパーク
+        type: Math.random() < 0.4 ? 'hex' : 'spark', // 40%で六角形、他はデジタルドット
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        size: Math.random() * 7 + 4,
-        spikes: 4,
+        size: Math.random() * 8 + 4,
         rot: Math.random() * Math.PI,
         rotSpeed: 0.05,
         alpha: 1,
@@ -2105,59 +2235,59 @@
     }
 
     function spawnShockwave(x, y, colorClass) {
-      let color = '#00f2fe';
-      if (colorClass === 'theme-magenta') color = '#ff2a85';
+      let color = '#ff5500';
+      if (colorClass === 'theme-magenta') color = '#ff003c';
       if (colorClass === 'theme-yellow') color = '#ffd200';
-      if (colorClass === 'theme-green') color = '#00e676';
+      if (colorClass === 'theme-green') color = '#00ff66';
 
       shockwaves.push({
         x: x,
         y: y,
         radius: 5,
-        maxRadius: 180,
-        lineWidth: 20,
+        maxRadius: 190,
+        lineWidth: 18,
         alpha: 1,
         color: color
       });
       
-      // 1. アメコミ星パーティクルの生成
-      for (let i = 0; i < 35; i++) {
+      // 1. ハニカム警告破片の生成
+      for (let i = 0; i < 40; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 7 + 3;
+        const speed = Math.random() * 8 + 3;
         particles.push({
-          type: 'star',
+          type: 'hex',
           x: x,
           y: y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          size: Math.random() * 14 + 10,
-          spikes: 5,
+          size: Math.random() * 12 + 6,
           rot: Math.random() * Math.PI * 2,
-          rotSpeed: (Math.random() - 0.5) * 0.15,
+          rotSpeed: (Math.random() - 0.5) * 0.12,
           alpha: 1,
           decay: Math.random() * 0.012 + 0.008,
           color: color
         });
       }
 
-      // 2. モコモコ煙（雲）パーティクルの生成
-      for (let i = 0; i < 20; i++) {
+      // 2. デジタルノイズブロックの生成
+      for (let i = 0; i < 30; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 4 + 1.5;
+        const speed = Math.random() * 6 + 2;
         particles.push({
-          type: 'cloud',
+          type: 'noise',
           x: x,
           y: y,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          size: Math.random() * 16 + 12,
+          width: Math.random() * 16 + 8,
+          height: Math.random() * 8 + 4,
           alpha: 0.9,
-          decay: Math.random() * 0.015 + 0.01,
-          color: '#ffffff'
+          decay: Math.random() * 0.02 + 0.01,
+          color: Math.random() < 0.5 ? '#ffffff' : color
         });
       }
       
-      flashOpacity = 0.75;
+      flashOpacity = 0.8;
     }
 
     function updateParticles() {
@@ -2165,8 +2295,8 @@
         const p = particles[i];
         p.x += p.vx;
         p.y += p.vy;
-        p.vx *= 0.97; // 少し減速率を高めてポップに
-        p.vy *= 0.97;
+        p.vx *= 0.96;
+        p.vy *= 0.96;
         p.alpha -= p.decay;
         
         if (p.rot !== undefined && p.rotSpeed !== undefined) {
@@ -2180,9 +2310,9 @@
       
       for (let i = shockwaves.length - 1; i >= 0; i--) {
         const sw = shockwaves[i];
-        sw.radius += (sw.maxRadius - sw.radius) * 0.12;
-        sw.lineWidth *= 0.92;
-        sw.alpha -= 0.04;
+        sw.radius += (sw.maxRadius - sw.radius) * 0.15;
+        sw.lineWidth *= 0.9;
+        sw.alpha -= 0.05;
         
         if (sw.alpha <= 0 || sw.lineWidth < 0.5) {
           shockwaves.splice(i, 1);
@@ -2190,58 +2320,34 @@
       }
       
       if (flashOpacity > 0) {
-        flashOpacity -= 0.03;
+        flashOpacity -= 0.04;
       }
     }
 
-    function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, color, alpha) {
-      let rot = Math.PI / 2 * 3;
-      let x = cx;
-      let y = cy;
-      let step = Math.PI / spikes;
-
+    function drawHexShard(ctx, cx, cy, size, color, alpha, rot) {
       ctx.save();
       ctx.globalAlpha = alpha;
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
       ctx.beginPath();
-      ctx.moveTo(cx, cy - outerRadius);
-      for (let i = 0; i < spikes; i++) {
-        x = cx + Math.cos(rot) * outerRadius;
-        y = cy + Math.sin(rot) * outerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
-
-        x = cx + Math.cos(rot) * innerRadius;
-        y = cy + Math.sin(rot) * innerRadius;
-        ctx.lineTo(x, y);
-        rot += step;
+      for (let i = 0; i < 6; i++) {
+        const angle = (Math.PI / 3) * i;
+        ctx.lineTo(size * Math.sin(angle), size * Math.cos(angle));
       }
-      ctx.lineTo(cx, cy - outerRadius);
       ctx.closePath();
-      
       ctx.fillStyle = color;
-      ctx.strokeStyle = '#050814';
-      ctx.lineWidth = 3.5;
-      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
       ctx.fill();
       ctx.restore();
     }
 
-    function drawCloud(ctx, cx, cy, size, alpha) {
+    function drawNoiseBlock(ctx, cx, cy, w, h, color, alpha) {
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.beginPath();
-      ctx.arc(cx, cy, size * 0.7, 0, Math.PI * 2);
-      ctx.arc(cx + size * 0.4, cy - size * 0.2, size * 0.6, 0, Math.PI * 2);
-      ctx.arc(cx - size * 0.4, cy - size * 0.2, size * 0.6, 0, Math.PI * 2);
-      ctx.closePath();
-      
-      ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#050814';
-      ctx.lineWidth = 3;
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-      ctx.fill();
+      ctx.fillStyle = color;
+      ctx.fillRect(cx - w/2, cy - h/2, w, h);
       ctx.restore();
     }
 
@@ -2255,7 +2361,7 @@
       const centerX = w / 2;
       const centerY = h / 2;
       
-      // アメコミ衝撃波リング（太枠付き）
+      // ハニカム警告衝撃波リング
       shockwaves.forEach(sw => {
         particleCtx.save();
         particleCtx.beginPath();
@@ -2266,11 +2372,11 @@
         particleCtx.stroke();
         
         particleCtx.beginPath();
-        particleCtx.arc(centerX, centerY, sw.radius + sw.lineWidth/2, 0, Math.PI * 2);
-        particleCtx.strokeStyle = '#050814';
-        particleCtx.lineWidth = 2.5;
-        particleCtx.globalAlpha = sw.alpha;
+        particleCtx.rect(centerX - sw.radius, centerY - sw.radius, sw.radius * 2, sw.radius * 2);
+        particleCtx.strokeStyle = 'rgba(255,85,0,0.15)';
+        particleCtx.lineWidth = 1.5;
         particleCtx.stroke();
+        
         particleCtx.restore();
       });
       
@@ -2278,18 +2384,18 @@
         const px = centerX + p.x;
         const py = centerY + p.y;
         
-        if (p.type === 'star') {
-          drawStar(particleCtx, px, py, p.spikes || 5, p.size, p.size * 0.45, p.color, p.alpha);
-        } else if (p.type === 'cloud') {
-          drawCloud(particleCtx, px, py, p.size, p.alpha);
+        if (p.type === 'hex') {
+          drawHexShard(particleCtx, px, py, p.size, p.color, p.alpha, p.rot);
+        } else if (p.type === 'noise') {
+          drawNoiseBlock(particleCtx, px, py, p.width, p.height, p.color, p.alpha);
         } else {
-          // 通常の火花（太枠付き）
+          // デジタルドット（枠付き）
           particleCtx.save();
           particleCtx.beginPath();
-          particleCtx.arc(px, py, p.size, 0, Math.PI * 2);
+          particleCtx.rect(px - p.size/2, py - p.size/2, p.size, p.size);
           particleCtx.fillStyle = p.color;
-          particleCtx.strokeStyle = '#050814';
-          particleCtx.lineWidth = 1.5;
+          particleCtx.strokeStyle = '#000000';
+          particleCtx.lineWidth = 1;
           particleCtx.globalAlpha = p.alpha;
           particleCtx.fill();
           particleCtx.stroke();
@@ -2307,8 +2413,7 @@
     }
 
     function animate() {
-      updateAmbientOrbs();
-      drawAmbientOrbs();
+      drawAmbientBackground();
       
       updateParticles();
       drawParticles();
@@ -2338,10 +2443,18 @@
     function startTimer() {
       if (tasks.length === 0) return;
       
-      // 初回スタート時のみ爆発トリガー
+      // 内部電源モードの有効化
+      document.body.classList.add('internal-battery-mode');
+      if (DOM.powerStatusText) {
+        DOM.powerStatusText.textContent = isHiragana ? 'ないぶでんげん ドーサ中 (LIMIT)' : 'INTERNAL BATTERY ACTIVE';
+      }
+      if (DOM.powerStatusValue) {
+        DOM.powerStatusValue.querySelector('.power-icon').textContent = '🔋';
+      }
+      
       const currentTask = tasks[currentTaskIndex];
       if (remainingSeconds === totalDuration && isPaused) {
-        triggerCartoonExplosion(isHiragana ? 'いくぞ！' : 'スタート！');
+        triggerEvaAlert(isHiragana ? 'いくぞ！' : 'スタート！');
         spawnShockwave(0, 0, currentTask.theme);
       }
       
@@ -2362,6 +2475,15 @@
       if (timerId) {
         cancelAnimationFrame(timerId);
         timerId = null;
+      }
+      
+      // 外部電源モードへ切り替え
+      document.body.classList.remove('internal-battery-mode');
+      if (DOM.powerStatusText) {
+        DOM.powerStatusText.textContent = isHiragana ? 'がいぶでんげん セツゾク中' : 'EXTERNAL POWER CONNECTED';
+      }
+      if (DOM.powerStatusValue) {
+        DOM.powerStatusValue.querySelector('.power-icon').textContent = '🔌';
       }
       
       if (DOM.playPauseBtn) DOM.playPauseBtn.classList.remove('pulse');
@@ -2415,16 +2537,16 @@
       
       spawnShockwave(0, 0, completedTask.theme);
       
-      // 次のタスク名で爆発表示
+      // 次のタスク名で警告表示
       const nextIndex = currentTaskIndex + 1;
-      let explosionText = '';
+      let alertText = '';
       if (nextIndex < tasks.length) {
         const nextTask = tasks[nextIndex];
-        explosionText = isHiragana ? nextTask.nameHiragana : nextTask.nameKanji;
+        alertText = isHiragana ? nextTask.nameHiragana : nextTask.nameKanji;
       } else {
-        explosionText = loopEnabled ? (isHiragana ? 'もういっかい！' : '最初からループ！') : (isHiragana ? 'おしまい！' : 'おしまい！');
+        alertText = loopEnabled ? (isHiragana ? 'もういっかい！' : '最初からループ！') : (isHiragana ? 'かつどうげんかい' : '活動限界');
       }
-      triggerCartoonExplosion(explosionText);
+      triggerEvaAlert(alertText);
       
       if (DOM.chimeSelect) {
         playTransitionSound(DOM.chimeSelect.value);
@@ -2452,7 +2574,7 @@
 
     function alertUserAllDone() {
       updateUI();
-      triggerCartoonExplosion(isHiragana ? 'おしまい！' : 'おしまい！');
+      triggerEvaAlert(isHiragana ? 'かつどうげんかい' : '活動限界');
       setTimeout(() => {
         if (DOM.chimeSelect) {
           playTransitionSound(DOM.chimeSelect.value);
@@ -2474,18 +2596,18 @@
     function updateActiveThemeColors(themeClass) {
       const root = document.documentElement;
       
-      let activeColor = '#00f2fe';
-      let activeGlow = 'rgba(0, 242, 254, 0.35)';
+      let activeColor = 'var(--eva-orange)';
+      let activeGlow = 'var(--eva-orange-glow)';
       
       if (themeClass === 'theme-magenta') {
-        activeColor = '#ff2a85';
-        activeGlow = 'rgba(255, 42, 133, 0.35)';
+        activeColor = 'var(--eva-red)';
+        activeGlow = 'var(--eva-red-glow)';
       } else if (themeClass === 'theme-yellow') {
-        activeColor = '#ffd200';
+        activeColor = 'var(--eva-yellow)';
         activeGlow = 'rgba(255, 210, 0, 0.35)';
       } else if (themeClass === 'theme-green') {
-        activeColor = '#00e676';
-        activeGlow = 'rgba(0, 230, 118, 0.35)';
+        activeColor = 'var(--eva-green)';
+        activeGlow = 'rgba(0, 255, 102, 0.35)';
       }
       
       root.style.setProperty('--active-color', activeColor);
@@ -2676,10 +2798,10 @@
           
           const nextIndex = (currentTaskIndex + 1) % tasks.length;
           const nextTask = tasks[nextIndex];
-          const explosionText = isHiragana ? nextTask.nameHiragana : nextTask.nameKanji;
+          const alertText = isHiragana ? nextTask.nameHiragana : nextTask.nameKanji;
           
           spawnShockwave(0, 0, tasks[currentTaskIndex].theme);
-          triggerCartoonExplosion(explosionText);
+          triggerEvaAlert(alertText);
           
           setTimeout(() => {
             currentTaskIndex = nextIndex;
@@ -2942,21 +3064,20 @@
       }
     }
 
-    function triggerCartoonExplosion(text) {
-      const container = document.getElementById('cartoon-explosion');
-      const textEl = document.getElementById('explosion-text');
+    function triggerEvaAlert(text) {
+      const container = DOM.evaAlertPopup;
+      const textEl = DOM.evaAlertText;
       if (!container || !textEl) return;
       
       textEl.textContent = text;
       
-      // アニメーションのリセットと起動
       container.classList.remove('active');
       void container.offsetWidth; // リフロー強制
       container.classList.add('active');
       
       setTimeout(() => {
         container.classList.remove('active');
-      }, 1300);
+      }, 1500);
     }
 
     function showFullscreenHint() {
@@ -3017,14 +3138,16 @@
     });
   </script>
 
-  <!-- アメコミ風スプライト爆発ポップアップ -->
-  <div id="cartoon-explosion" class="cartoon-explosion">
+  <!-- エヴァ風システム警告ポップアップ -->
+  <div id="eva-alert-popup" class="eva-alert-popup">
     <div class="explosion-flash"></div>
-    <svg class="explosion-svg" viewBox="0 0 400 400">
-      <path class="spike-bg" d="M 200 60 L 225 125 L 290 100 L 265 165 L 330 160 L 285 210 L 340 250 L 270 260 L 300 325 L 240 295 L 230 360 L 190 305 L 150 360 L 140 295 L 80 325 L 110 260 L 40 250 L 95 210 L 50 160 L 115 165 L 90 100 L 155 125 Z" />
-      <path class="spike-fg" d="M 200 100 L 215 145 L 260 130 L 245 175 L 290 175 L 255 210 L 295 240 L 245 245 L 265 290 L 225 270 L 215 315 L 190 275 L 165 315 L 155 270 L 115 290 L 135 245 L 85 240 L 125 210 L 90 175 L 135 175 L 120 130 L 165 145 Z" />
-    </svg>
-    <div class="explosion-text" id="explosion-text">GO!</div>
+    <div class="emergency-hex-container">
+      <div class="emergency-hex">
+        <div class="hex-text-small">SYSTEM WARNING</div>
+        <div class="hex-text-large" id="eva-alert-text">活動限界</div>
+        <div class="hex-text-small">EMERGENCY</div>
+      </div>
+    </div>
   </div>
 
   <!-- 全画面時の操作ヒント -->
