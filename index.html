@@ -1,59 +1,1723 @@
-﻿    /* ==========================================================================
-       NERV蜈ｬ蠑城｢ｨ縲後Γ繧ｫ繝九き繝ｫSVG繧ｿ繧､繝槭・縲阪い繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ繝ｻ繝ｭ繧ｸ繝・け
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ドキドキ！どはでインターバルタイマー</title>
+  <meta name="description" content="小学校の授業や家庭学習で使える、ド派手な演出と音で楽しむワクワク・ドキドキのインターバルタイマーです。">
+  <!-- Google Fonts: Noto Serif JP (エヴァ特太明朝用), Orbitron (数字用), M PLUS Rounded 1c (子供向け日本語用), Outfit (UI用) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;900&family=Noto+Serif+JP:wght@900&family=Orbitron:wght@600;900&family=Outfit:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       NERV公式風「メカニカルSVGタイマー」デザインシステム & スタイリング
+       ========================================================================== */
+
+    @font-face {
+      font-family: 'digital7_mono';
+      src: url('./NERV-timer-main/NERV-timer-main/src/fonts/digital7_mono.woff2') format('woff2'),
+           url('./NERV-timer-main/NERV-timer-main/src/fonts/digital7_mono.woff') format('woff'),
+           url('./NERV-timer-main/NERV-timer-main/src/fonts/digital7_mono.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    :root {
+      --bg-color: #000000;
+      --bg-gradient: radial-gradient(circle at center, #100600 0%, #000000 100%);
+      --card-bg: rgba(14, 6, 2, 0.85);
+      --card-border: rgba(255, 85, 0, 0.2);
+      --text-primary: #ffffff;
+      --text-secondary: #a89484; /* エヴァ特有 of ベージュグレー */
+      --text-muted: #5e4f45;
+      
+      /* エヴァ警告カラー */
+      --eva-orange: #ff5500;
+      --eva-orange-glow: rgba(255, 85, 0, 0.45);
+      --eva-red: #ff003c;
+      --eva-red-glow: rgba(255, 0, 60, 0.55);
+      --eva-yellow: #ffd200;
+      --eva-green: #00ff66;
+      
+      --active-color: var(--eva-orange);
+      --active-glow: var(--eva-orange-glow);
+      
+      --font-timer: 'digital7_mono', monospace;
+      --font-eva: 'Noto Serif JP', serif; /* 極太明朝体 */
+      --font-ui: 'M PLUS Rounded 1c', sans-serif;
+      
+      --transition-smooth: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --border-radius-lg: 4px;
+      --border-radius-md: 4px;
+      --border-radius-sm: 2px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* フルスクリーン背景 */
+    :fullscreen,
+    :fullscreen * {
+      background-color: #000000 !important;
+    }
+
+    ::backdrop {
+      background-color: #000000 !important;
+    }
+
+    html, body {
+      background: var(--bg-color) !important;
+      background-image: var(--bg-gradient) !important;
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color 0.3s ease;
+    }
+
+    /* 背景アニメーションキャンバス */
+    .ambient-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    /* 通常の残り10秒パルス */
+    @keyframes body-heartbeat {
+      0% {
+        box-shadow: inset 0 0 50px rgba(255, 0, 60, 0);
+        background-color: rgba(255, 0, 60, 0);
+      }
+      50% {
+        box-shadow: inset 0 0 100px rgba(255, 0, 60, 0.35);
+        background-color: rgba(255, 0, 60, 0.06);
+      }
+      100% {
+        box-shadow: inset 0 0 50px rgba(255, 0, 60, 0);
+        background-color: rgba(255, 0, 60, 0);
+      }
+    }
+
+    body.pulse-active {
+      animation: body-heartbeat 1.0s infinite ease-in-out;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 1600px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 32px 40px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 0 10px var(--eva-orange));
+      animation: pulse-icon 2.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes pulse-icon {
+      0% { transform: scale(1); filter: drop-shadow(0 0 5px var(--eva-orange-glow)); }
+      100% { transform: scale(1.1); filter: drop-shadow(0 0 15px var(--eva-orange)); }
+    }
+
+    .logo-text {
+      font-size: 1.6rem;
+      font-weight: 900;
+      font-family: var(--font-eva);
+      color: var(--eva-orange);
+      letter-spacing: 3px;
+      text-shadow: 0 0 15px var(--eva-orange-glow);
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* 音量調整 */
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 85, 0, 0.05);
+      padding: 6px 12px;
+      border-radius: 0;
+      border: 1px solid var(--card-border);
+    }
+
+    .volume-control input[type="range"] {
+      width: 80px;
+      height: 6px;
+      -webkit-appearance: none;
+      background: rgba(255, 85, 0, 0.15);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .volume-control input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 12px;
+      height: 12px;
+      background: var(--eva-orange);
+      box-shadow: 0 0 8px var(--eva-orange-glow);
+      transition: transform 0.1s;
+    }
+
+    .volume-control input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.3);
+    }
+
+    /* メインエリア */
+    .app-main {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    /* ==========================================================================
+       NERVメカニカルSVGタイマーセクション
+       ========================================================================== */
+    .timer-section {
+      background: #000000;
+      border: 1px solid rgba(255, 85, 0, 0.15);
+      border-radius: var(--border-radius-lg);
+      width: 100%;
+      aspect-ratio: 903 / 551;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+      container-type: both;
+    }
+
+    /* メカニカルSVGフレーム */
+    svg#clock-main-shape {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* SVGフレームのカラー適用 */
+    #clock-frame path, #clock-frame polygon {
+      fill: none;
+      stroke: var(--active-color);
+      stroke-width: 1px;
+      opacity: 0.15;
+    }
+    
+    /* 外枠太線 */
+    #clock-lines .cls-3 {
+      stroke: var(--active-color);
+      stroke-width: 3px;
+      filter: drop-shadow(0px 0px 4px var(--active-glow));
+      transition: stroke 0.3s ease;
+    }
+
+    /* デコパーツ */
+    #clock-lines .cls-4 {
+      fill: var(--active-color);
+      transition: fill 0.3s ease;
+    }
+    
+    #deco-black g rect, #deco-black rect {
+      fill: #0c0502;
+    }
+    
+    #deco-bg-lines rect, #deco-bg-lines polyline {
+      fill: none;
+      stroke: var(--active-color);
+      stroke-width: 1px;
+      opacity: 0.25;
+    }
+    
+    /* 意味ありげな極小文字表示 */
+    #clock-lines text {
+      fill: var(--active-color);
+      opacity: 0.45;
+      font-family: monospace;
+      font-size: 7px;
+    }
+
+    /* 7セグデジタル時計表示 */
+    #bigClock {
+      font-family: var(--font-timer);
+      position: absolute;
+      z-index: 5;
+      width: auto;
+      display: flex;
+      align-items: flex-baseline;
+      box-sizing: border-box;
+      top: 23.6%;
+      left: 19.5%;
+      color: var(--active-color);
+      text-shadow: 0px 0px 1.5cqw var(--active-color);
+      transition: color 0.3s ease, text-shadow 0.3s ease;
+    }
+
+    #bigClock span {
+      display: inline-block;
+      font-size: 16.6cqw;
+      line-height: 1;
+      letter-spacing: -0.2cqw;
+    }
+
+    .clocktitleimg {
+      position: absolute;
+      z-index: 6;
+      top: -4.8cqh;
+      left: -9.5cqw;
+      width: 22cqw;
+      filter: drop-shadow(0 0 5px var(--active-glow));
+    }
+
+    span#clockSecond {
+      font-size: 7cqw !important;
+      margin-left: 0.5cqw;
+    }
+
+    span.clockSeparator {
+      margin-left: -3cqw !important;
+      margin-right: -3cqw !important;
+    }
+
+    span.clockSeparator.seconds {
+      font-size: 7cqw !important;
+      margin-left: -1.2cqw !important;
+      margin-right: -1cqw !important;
+    }
+
+    /* 警告プレート型操作ボタンエリア */
+    div#databoxes {
+      position: absolute;
+      z-index: 10;
+      bottom: 26.3%;
+      left: 21.6%;
+      display: flex;
+      gap: 1.5cqw;
+    }
+
+    .bottombox {
+      cursor: pointer;
+      display: block;
+      border: 1px solid var(--active-color);
+      background: #000000;
+      color: var(--active-color);
+      height: 5.4cqh;
+      width: auto;
+      min-width: 10cqw;
+      text-align: center;
+      border-radius: 0;
+      padding: 0.6cqh 1.2cqw;
+      font-size: 1.5cqw;
+      font-weight: 900;
+      font-family: var(--font-ui);
+      letter-spacing: 1px;
+      transition: var(--transition-smooth);
+      text-shadow: 0px 0px 0.8cqw var(--active-color);
+    }
+
+    .bottombox:hover {
+      background: var(--active-color);
+      color: #000000;
+      text-shadow: none;
+      box-shadow: 0 0 15px var(--active-glow);
+    }
+    
+    .bottombox:active {
+      transform: scale(0.96);
+    }
+
+    /* ボタンアクティブ時の下部警告ランプ */
+    .bottombox.active {
+      background: #150500;
+      border-color: var(--eva-red);
+      color: var(--eva-red);
+      text-shadow: 0 0 1cqw var(--eva-red);
+      animation: alert-flash 0.8s infinite alternate;
+    }
+
+    .bottombox.active::after {
+      content: '';
+      display: block;
+      background: var(--eva-red);
+      width: 100%;
+      height: 3px;
+      position: relative;
+      bottom: -4px;
+      box-shadow: 0 0 8px var(--eva-red);
+    }
+
+    /* 日付表示 */
+    #date {
+      position: absolute;
+      color: #000000;
+      bottom: 3.6%;
+      right: 8.8%;
+      text-align: right;
+      background: var(--active-color);
+      padding: 0.2cqh 0.8cqw;
+      font-family: var(--font-timer);
+      font-size: 2.2cqw;
+      letter-spacing: 0.5px;
+      z-index: 5;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    /* 音声コントロールスピーカー */
+    .audio_control {
+      position: absolute;
+      bottom: 3.6%;
+      right: 3.1%;
+      z-index: 5;
+    }
+
+    .audio_control img {
+      transition: opacity .3s, filter .3s;
+      opacity: .8;
+      display: block;
+      width: 2.5cqw;
+      height: 2.5cqw;
+      cursor: pointer;
+      filter: drop-shadow(0 0 5px var(--active-glow));
+    }
+
+    .audio_control img:hover {
+      opacity: 1;
+      filter: drop-shadow(0 0 8px var(--active-color));
+    }
+
+    /* タスク表示 (上部余白) */
+    .current-task-display {
+      position: absolute;
+      top: 4%;
+      left: 5%;
+      width: 90%;
+      z-index: 5;
+      text-align: left;
+      margin-bottom: 0;
+      pointer-events: none;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 0;
+      font-size: 1.2cqw;
+      font-weight: 900;
+      font-family: var(--font-eva);
+      letter-spacing: 1.5px;
+      background: #000000;
+      border: 1.5px solid var(--active-color);
+      color: var(--active-color);
+      box-shadow: 0 0 10px var(--active-glow);
+      transition: var(--transition-smooth);
+    }
+
+    .task-title {
+      font-size: 3.2cqw;
+      font-weight: 900;
+      font-family: var(--font-eva);
+      margin-top: 0.5cqh;
+      letter-spacing: 2px;
+      transition: var(--transition-smooth);
+      color: #ffffff;
+      text-shadow: 0 0 12px var(--active-glow);
+    }
+
+    /* 電源供給システムステータス (右側フレーム内) */
+    .power-status-indicator {
+      position: absolute;
+      top: 24%;
+      right: 5%;
+      width: 20cqw;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-family: var(--font-timer);
+      border-left: 2px solid var(--active-color);
+      padding: 4px 0 4px 8px;
+      background: rgba(0,0,0,0.4);
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .power-status-title {
+      font-size: 1cqw;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .power-status-value {
+      font-size: 1.2cqw;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: var(--eva-green);
+      text-shadow: 0 0 8px rgba(0, 255, 102, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    body.internal-battery-mode .power-status-value {
+      color: var(--eva-orange);
+      text-shadow: 0 0 8px var(--eva-orange-glow);
+      animation: alert-flash 1s infinite alternate;
+    }
+
+    /* 進行タイムライン (下部余白) */
+    .timeline-container {
+      position: absolute;
+      bottom: 4%;
+      left: 5%;
+      width: 90%;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+      gap: 1cqw;
+      background: rgba(0, 0, 0, 0.65);
+      padding: 0.8cqh 1.8cqw;
+      border-radius: 0;
+      border: 1px solid rgba(255, 85, 0, 0.1);
+      z-index: 5;
+    }
+    
+    .timeline-step {
+      display: flex;
+      align-items: center;
+      gap: 0.6cqw;
+      padding: 0.4cqh 1cqw;
+      border-radius: 0;
+      font-size: 1.2cqw;
+      font-family: var(--font-eva);
+      font-weight: 900;
+      transition: var(--transition-smooth);
+      background: rgba(255, 85, 0, 0.02);
+      border: 1px solid rgba(255, 85, 0, 0.1);
+    }
+    
+    .timeline-step.past {
+      opacity: 0.35;
+      background: rgba(0, 0, 0, 0.4);
+      text-decoration: line-through;
+      border-color: rgba(255, 85, 0, 0.03);
+    }
+    
+    .timeline-step.active {
+      background: rgba(255, 85, 0, 0.1);
+      border-color: var(--active-color);
+      color: #ffffff;
+      box-shadow: 0 0 10px var(--active-glow);
+    }
+    
+    .timeline-step.future {
+      opacity: 0.7;
+    }
+    
+    .step-indicator {
+      width: 1.8cqw;
+      height: 1.8cqw;
+      background: rgba(255, 85, 0, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1cqw;
+      font-family: var(--font-ui);
+      font-weight: bold;
+    }
+    
+    .timeline-step.active .step-indicator {
+      background: var(--active-color);
+      color: #000000;
+      font-weight: 900;
+      box-shadow: 0 0 5px var(--active-color);
+    }
+    
+    .timeline-connector {
+      height: 1.5px;
+      width: 2cqw;
+      background: rgba(255, 85, 0, 0.1);
+    }
+    
+    .timeline-connector.past {
+      background: var(--active-color);
+      opacity: 0.4;
+    }
+
+    /* 次のタスク予告と全画面ボタンはメインフレーム外部へ非表示 */
+    .next-task-preview,
+    #fullscreen-btn {
+      display: none !important;
+    }
+
+    /* 一般ボタン */
+    .ui-btn {
+      background: rgba(255, 85, 0, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: var(--transition-smooth);
+    }
+
+    .ui-btn:hover {
+      background: rgba(255, 85, 0, 0.15);
+      border-color: var(--eva-orange);
+      box-shadow: 0 0 10px var(--eva-orange-glow);
+    }
+
+    .primary-btn {
+      background: linear-gradient(135deg, var(--eva-orange) 0%, #cc3300 100%);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 15px var(--eva-orange-glow);
+    }
+
+    .primary-btn:hover {
+      background: linear-gradient(135deg, #ff6611 0%, #e63900 100%);
+      box-shadow: 0 8px 25px var(--eva-orange-glow), 0 0 10px var(--eva-orange);
+    }
+
+    /* 設定エリア */
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .settings-card {
+      background: var(--card-bg);
+      border: 2px solid var(--eva-orange);
+      border-radius: var(--border-radius-lg);
+      padding: 24px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-family: var(--font-eva);
+      font-weight: 900;
+      color: var(--eva-orange);
+      margin-bottom: 20px;
+      border-left: 4px solid var(--eva-orange);
+      padding-left: 12px;
+      line-height: 1;
+      letter-spacing: 1px;
+    }
+
+    /* プリセット */
+    .preset-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .preset-btn {
+      background: rgba(255, 85, 0, 0.02);
+      border: 1px solid rgba(255, 85, 0, 0.15);
+      border-radius: 0;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: var(--transition-smooth);
+    }
+
+    .preset-btn:hover {
+      background: rgba(255, 85, 0, 0.08);
+      border-color: var(--eva-orange);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .preset-icon {
+      font-size: 1.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+    }
+
+    .preset-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .preset-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .preset-duration {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* スケジュールリスト */
+    .schedule-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 24px;
+      max-height: 250px;
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .schedule-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 85, 0, 0.1);
+      border-radius: 0;
+      padding: 10px 14px;
+      transition: var(--transition-smooth);
+    }
+
+    .schedule-item.current-item {
+      background: rgba(255, 85, 0, 0.05);
+      border-color: var(--active-color);
+      box-shadow: inset 3px 0 0 var(--active-color), 0 0 10px rgba(255, 255, 255, 0.02);
+    }
+
+    .schedule-item.theme-cyan { border-left: 4px solid var(--eva-orange); }
+    .schedule-item.theme-magenta { border-left: 4px solid var(--eva-red); }
+    .schedule-item.theme-yellow { border-left: 4px solid var(--eva-yellow); }
+    .schedule-item.theme-green { border-left: 4px solid var(--eva-green); }
+
+    .schedule-item-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .item-index {
+      font-family: var(--font-timer);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.02);
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .item-name {
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .item-duration {
+      font-family: var(--font-timer);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+
+    .schedule-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .action-btn {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      cursor: pointer;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      transition: var(--transition-smooth);
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 85, 0, 0.15);
+      color: var(--text-primary);
+    }
+
+    .delete-btn:hover {
+      background: rgba(255, 0, 60, 0.2);
+      color: var(--eva-red);
+    }
+
+    /* 追加フォーム */
+    .add-task-form {
+      border-top: 1px dashed rgba(255, 85, 0, 0.15);
+      padding-top: 20px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .form-group.size-half {
+      flex: 0.5;
+    }
+
+    .form-group label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 85, 0, 0.2);
+      color: var(--text-primary);
+      font-family: var(--font-ui);
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      border-radius: 0;
+      outline: none;
+      transition: var(--transition-smooth);
+    }
+
+    .form-group input:focus {
+      border-color: var(--eva-orange);
+      box-shadow: 0 0 8px var(--eva-orange-glow);
+    }
+
+    .quick-time-buttons {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .quick-time-btn {
+      background: rgba(255, 85, 0, 0.03);
+      border: 1px solid rgba(255, 85, 0, 0.15);
+      color: var(--text-secondary);
+      padding: 4px 10px;
+      border-radius: 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+    }
+
+    .quick-time-btn:hover {
+      background: rgba(255, 85, 0, 0.12);
+      color: var(--text-primary);
+    }
+
+    .theme-picker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 8px 12px;
+      border-radius: 0;
+      border: 1px solid rgba(255, 85, 0, 0.1);
+    }
+
+    .picker-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .theme-options {
+      display: flex;
+      gap: 10px;
+    }
+
+    .theme-radio {
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+      width: 20px;
+      height: 20px;
+    }
+
+    .theme-radio input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+      position: absolute;
+    }
+
+    .radio-dot {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 0;
+      border: 1.5px solid transparent;
+      transition: var(--transition-smooth);
+    }
+
+    .theme-radio.cyan .radio-dot { background-color: var(--eva-orange); }
+    .theme-radio.magenta .radio-dot { background-color: var(--eva-red); }
+    .theme-radio.yellow .radio-dot { background-color: var(--eva-yellow); }
+    .theme-radio.green .radio-dot { background-color: var(--eva-green); }
+
+    .theme-radio input:checked + .radio-dot {
+      border-color: var(--text-primary);
+      transform: scale(1.15);
+      box-shadow: 0 0 8px var(--text-primary);
+    }
+
+    /* オプション */
+    .option-items {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .option-switch {
+      display: flex;
+      align-items: center;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .option-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .switch-slider {
+      position: relative;
+      width: 38px;
+      height: 20px;
+      background-color: rgba(255, 85, 0, 0.1);
+      border: 1px solid rgba(255, 85, 0, 0.3);
+      border-radius: 0;
+      transition: .3s;
+      margin-right: 10px;
+      flex-shrink: 0;
+    }
+
+    .switch-slider:before {
+      position: absolute;
+      content: "";
+      height: 12px;
+      width: 12px;
+      left: 3px;
+      bottom: 3px;
+      background-color: var(--text-primary);
+      border-radius: 0;
+      transition: .3s;
+    }
+
+    .option-switch input:checked + .switch-slider {
+      background-color: var(--eva-orange);
+      border-color: var(--eva-orange);
+    }
+
+    .option-switch input:checked + .switch-slider:before {
+      transform: translateX(18px);
+    }
+
+    .switch-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .sound-select-group {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      border-top: 1px dashed rgba(255, 85, 0, 0.15);
+      padding-top: 12px;
+    }
+
+    .sound-select-group label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .sound-select-group select {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 85, 0, 0.25);
+      color: var(--text-primary);
+      padding: 6px 10px;
+      border-radius: 0;
+      outline: none;
+      font-family: var(--font-ui);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       全画面モード (メカニカルフレーム最大化)
+       ========================================================================== */
+    body.fullscreen-mode {
+      background: #000000 !important;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body.fullscreen-mode .app-header,
+    body.fullscreen-mode .settings-section {
+      display: none !important;
+    }
+
+    body.fullscreen-mode .app-container {
+      padding: 0;
+      max-width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent !important;
+    }
+
+    body.fullscreen-mode .app-main {
+      grid-template-columns: 1fr;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent !important;
+    }
+
+    body.fullscreen-mode .timer-section {
+      border: none;
+      background: #000000 !important;
+      box-shadow: none;
+      width: 95vw;
+      max-width: 95vw;
+      height: auto;
+      max-height: 95vh;
+      aspect-ratio: 903 / 551;
+    }
+
+    /* 操作ヒントオーバーレイ */
+    .fs-hint-overlay {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.95rem;
+      color: rgba(255, 85, 0, 0.5);
+      background: rgba(14, 5, 2, 0.9);
+      border: 1px solid var(--eva-orange);
+      padding: 8px 20px;
+      border-radius: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+      opacity: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      font-family: var(--font-ui);
+      font-weight: bold;
+    }
+
+    .fs-hint-overlay.show {
+      opacity: 1;
+    }
+
+    /* ==========================================================================
+       エヴァ風警告ポップアップ
+       ========================================================================== */
+    .eva-alert-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      z-index: 9999;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+    }
+
+    .eva-alert-popup.active {
+      animation: pop-eva-alert 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    }
+
+    @keyframes pop-eva-alert {
+      0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0; }
+      8% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+      12% { transform: translate(-50%, -50%) scale(1.0); opacity: 1; }
+      85% { transform: translate(-50%, -50%) scale(1.0); opacity: 1; }
+      100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+    }
+
+    .emergency-hex-container {
+      position: relative;
+      width: 440px;
+      height: 380px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      filter: drop-shadow(0 0 25px rgba(255, 0, 60, 0.75));
+    }
+
+    .emergency-hex {
+      position: relative;
+      width: 320px;
+      height: 184.8px;
+      background-color: var(--eva-red);
+      margin: 92.4px 0;
+      border-left: solid 8px #ffffff;
+      border-right: solid 8px #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+      font-family: var(--font-eva);
+      box-shadow: 0 0 0 10px var(--eva-red);
+    }
+
+    .emergency-hex:before,
+    .emergency-hex:after {
+      content: "";
+      position: absolute;
+      left: -8px;
+      width: 0;
+      height: 0;
+      border-left: 168px solid transparent;
+      border-right: 168px solid transparent;
+    }
+
+    .emergency-hex:before { bottom: 184.8px; border-bottom: 92.4px solid var(--eva-red); }
+    .emergency-hex:after { top: 184.8px; border-top: 92.4px solid var(--eva-red); }
+
+    .hex-text-small {
+      font-family: var(--font-ui);
+      font-size: 0.95rem;
+      letter-spacing: 4px;
+      font-weight: 700;
+      opacity: 0.95;
+      color: #ffffff;
+    }
+
+    .hex-text-large {
+      font-size: 3.2rem;
+      font-weight: 900;
+      margin: 8px 0;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px rgba(255,255,255,0.4);
+      white-space: nowrap;
+      color: #ffffff;
+    }
+
+    /* 警告縞 */
+    .hazard-stripe {
+      background: repeating-linear-gradient(
+        -45deg,
+        var(--eva-yellow),
+        var(--eva-yellow) 12px,
+        #000000 12px,
+        #000000 24px
+      );
+      height: 10px;
+      border-bottom: 2.5px solid #000000;
+    }
+
+    /* ==========================================================================
+       BEAST (暴走) モード用特殊エフェクト
+       ========================================================================== */
+    body.beast-active {
+      animation: beast-alert-flash 0.4s infinite alternate, beast-screen-shake 0.08s infinite;
+    }
+
+    @keyframes beast-alert-flash {
+      0% {
+        background-color: #000000 !important;
+        box-shadow: inset 0 0 40px rgba(255, 0, 60, 0.3);
+      }
+      100% {
+        background-color: #1e0002 !important;
+        box-shadow: inset 0 0 140px rgba(255, 0, 60, 0.9);
+      }
+    }
+
+    @keyframes beast-screen-shake {
+      0% { transform: translate(0, 0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(2px, -1px); }
+      60% { transform: translate(-1px, -2px); }
+      80% { transform: translate(2px, 2px); }
+      100% { transform: translate(-1px, 1px); }
+    }
+
+    body.beast-active #bigClock {
+      animation: beast-glitch 0.12s infinite;
+    }
+
+    @keyframes beast-glitch {
+      0% { filter: skew(0deg) brightness(1.2); transform: scale(1); }
+      15% { filter: skew(4deg) brightness(1.8) contrast(1.3); transform: scale(1.03); }
+      30% { filter: skew(-4deg) brightness(0.7); transform: scale(0.97); }
+      45% { filter: skew(2deg) brightness(1.4); }
+      70% { filter: skew(-2deg) brightness(0.9); }
+      85% { filter: skew(5deg) brightness(1.6); }
+      100% { filter: skew(0deg) brightness(1.2); }
+    }
+
+    body.beast-active .timer-section {
+      border-color: var(--eva-red);
+      box-shadow: 0 0 30px rgba(255, 0, 60, 0.4);
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 992px) {
+      .app-main {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .app-container {
+        padding: 12px;
+      }
+      
+      .app-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+      
+      .header-controls {
+        justify-content: space-between;
+      }
+      
+      .preset-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+
+</style>
+</head>
+<body class="theme-dark">
+
+  <div class="app-container">
+    <!-- 背景用のアニメーションキャンバス -->
+    <canvas id="ambient-canvas" class="ambient-canvas"></canvas>
+
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">⚡</span>
+        <h1 class="logo-text" id="app-title" data-kanji="ドキドキ！どはでタイマー" data-hiragana="ドキドキ！どはでタイマー">ドキドキ！どはでタイマー</h1>
+      </div>
+      <div class="header-controls">
+        <!-- ひらがな/漢字 切り替え -->
+        <button id="lang-toggle-btn" class="ui-btn secondary-btn" aria-label="ひらがなと漢字を切り替える">
+          <span class="btn-icon">🔤</span>
+          <span class="btn-text" id="lang-toggle-text">ひらがな にする</span>
+        </button>
+        <!-- 音量調整 -->
+        <div class="volume-control">
+          <button id="mute-btn" class="ui-btn icon-btn" aria-label="ミュート切り替え">
+            <span id="mute-icon">🔊</span>
+          </button>
+          <input type="range" id="volume-slider" min="0" max="1" step="0.1" value="0.7" aria-label="音量" title="おんりょう">
+        </div>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <!-- タイマー表示セクション -->
+            <section class="timer-section" id="timer-section">
+        <!-- 進行中のタスク表示 -->
+        <div class="current-task-display">
+          <span class="badge" id="task-badge" data-kanji="じゅんび中" data-hiragana="じゅんびちゅう">じゅんび中</span>
+          <h2 class="task-title" id="current-task-title" data-kanji="タイマーをスタートしよう！" data-hiragana="タイマーをスタートしよう！">タイマーをスタートしよう！</h2>
+        </div>
+
+        <!-- デジタル時計 (分:秒:1/100秒) -->
+        <div id="bigClock" class="mainColor clock">
+          <img class="clocktitleimg" src="./NERV-timer-main/NERV-timer-main/src/clock-title.png" alt="NERV-CLOCK">
+          <span id="clockHour">00</span>
+          <span class="clockSeparator minute">:</span>
+          <span id="clockMinute">00</span>
+          <span class="clockSeparator seconds">:</span>
+          <span id="clockSecond">00</span>
+        </div>
+
+        <!-- 警告プレート型操作ボタンエリア -->
+        <div id="databoxes">
+          <div id="play-pause-btn" class="bottombox">
+            <span class="btn-text">START</span>
+          </div>
+          <div id="skip-btn" class="bottombox">
+            <span class="btn-text">SKIP</span>
+          </div>
+          <div id="reset-btn" class="bottombox">
+            <span class="btn-text">RESET</span>
+          </div>
+          <div id="beast-btn" class="bottombox">
+            <span class="btn-text">BEAST</span>
+          </div>
+        </div>
+
+        <!-- メカニカルSVGフレーム (移植コード) -->
+        <svg id="clock-main-shape" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 903 551">
+          <defs></defs>
+          <g id="clock-frame">
+            <polygon points="165.16 178.62 101.82 386.22 142.66 410.31 169.32 328.76 194.32 328.76 194.32 177.69 165.16 178.62"/>
+            <polygon points="99 396 47.74 551 110.24 551 140.16 419.58 99 396"/>
+            <path d="M210.63,402.86H763.54L762.8,327H631.18v50.27a21.47,21.47,0,0,1-5.51,14.53,17.25,17.25,0,0,1-12.76,5.75l-417.57-1.82L169.51,550.21h733V-.79H-.49v551H34.06V40h6.45V550.21h2.33L42.75,40.89A16.8,16.8,0,0,1,46.89,30c2.67-3,6.32-4.69,11.28-9l803.75.83c2.08,4.36,5.19,5.86,7.43,8.49,2.09,2.47,1.25,5.72,1.26,9.11l2.71,276.42.48,90.13a2.49,2.49,0,0,1-2.4,2.58H210.63a1.52,1.52,0,0,1-1.46-1.56v-2.52A1.52,1.52,0,0,1,210.63,402.86Z" transform="translate(0.49 0.79)"/>
+            <polygon points="762.16 326.14 192.99 326.14 192.99 177.85 165.49 177.85 166.32 107.42 297.99 107.42 305.91 126.88 762.16 126.88 762.16 326.14"/>
+            <path d="M180.19,175l-21.84-18.39a11.7,11.7,0,0,1-4-8.93V110.6a3.48,3.48,0,0,1,3.29-3.65h22.54Z" transform="translate(0.49 0.79)"/>
+          </g>
+          <g id="deco-black">
+            <g>
+              <rect x="208.41" y="330.61" width="1" height="8.34"/>
+              <rect x="212.57" y="330.61" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect x="617.57" y="330.61" width="1" height="8.34"/>
+              <rect x="621.74" y="330.61" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect x="617.57" y="383.44" width="1" height="8.34"/>
+              <rect x="621.74" y="383.44" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect x="523.49" y="378.8" width="2.5" height="5.56"/>
+              <rect x="593.49" y="378.8" width="2.5" height="5.56"/>
+            </g>
+            <rect x="414.32" y="378.8" width="2.5" height="5.56"/>
+            <rect x="495.99" y="378.8" width="2.5" height="5.56"/>
+            <rect x="386.82" y="378.8" width="2.5" height="5.56"/>
+            <rect x="320.99" y="378.8" width="2.5" height="5.56"/>
+            <rect x="293.49" y="378.8" width="2.5" height="5.56"/>
+            <rect x="230.16" y="378.8" width="2.5" height="5.56"/>
+            <rect x="46.25" y="431.26" width="1" height="7.5" transform="translate(-387.77 482.55) rotate(-90)"/>
+            <rect x="46.25" y="352.48" width="1" height="7.5" transform="translate(-308.99 403.78) rotate(-90)"/>
+            <rect x="46.25" y="274.63" width="1" height="7.5" transform="translate(-231.14 325.93) rotate(-90)"/>
+            <rect x="46.25" y="195.85" width="1" height="7.5" transform="translate(-152.36 247.15) rotate(-90)"/>
+            <rect x="46.25" y="118" width="1" height="7.5" transform="translate(-74.51 169.3) rotate(-90)"/>
+            <rect x="46.25" y="39.23" width="1" height="7.5" transform="translate(4.26 90.52) rotate(-90)"/>
+            <rect x="89.58" y="26.76" width="1" height="8.34" transform="translate(180.66 62.65) rotate(180)"/>
+            <rect x="192.08" y="26.76" width="1" height="8.34" transform="translate(385.66 62.65) rotate(180)"/>
+            <rect x="293.75" y="26.76" width="1" height="8.34" transform="translate(588.99 62.65) rotate(180)"/>
+            <rect x="396.25" y="26.76" width="1" height="8.34" transform="translate(793.99 62.65) rotate(180)"/>
+            <rect x="498.75" y="26.76" width="1" height="8.34" transform="translate(998.99 62.65) rotate(180)"/>
+            <rect x="601.25" y="26.76" width="1" height="8.34" transform="translate(1203.99 62.65) rotate(180)"/>
+            <rect x="702.92" y="26.76" width="1" height="8.34" transform="translate(1407.33 62.65) rotate(180)"/>
+            <rect x="639.58" y="117.58" width="1" height="7.41" transform="translate(1280.66 243.38) rotate(180)"/>
+            <rect x="476.25" y="117.58" width="1" height="7.41" transform="translate(953.99 243.38) rotate(180)"/>
+            <rect x="307.92" y="120.36" width="1" height="4.63" transform="translate(617.33 246.16) rotate(180)"/>
+            <rect x="293.75" y="99.97" width="1" height="5.56" transform="translate(588.99 206.3) rotate(180)"/>
+            <rect x="166.99" y="97.4" width="1" height="5.56" transform="translate(335.48 201.15) rotate(180)"/>
+            <rect x="157.83" y="97.4" width="1" height="5.56" transform="translate(317.14 201.15) rotate(180)"/>
+            <rect x="148.66" y="110.37" width="1" height="5.56" transform="translate(298.81 227.1) rotate(180)"/>
+            <rect x="148.66" y="138.17" width="1" height="5.56" transform="translate(298.81 282.7) rotate(180)"/>
+            <rect x="155.33" y="168.76" width="1" height="7.41" transform="translate(312.14 345.72) rotate(180)"/>
+            <rect x="159.48" y="168.75" width="1" height="7.41" transform="translate(320.44 345.71) rotate(180)"/>
+            <line class="cls-1" x1="100.5" y1="384.5" x2="93" y2="380"/>
+            <line class="cls-1" x1="153.5" y1="416.5" x2="146" y2="412"/>
+            <line class="cls-1" x1="96.5" y1="394.5" x2="89" y2="390"/>
+            <line class="cls-1" x1="149.5" y1="426.5" x2="142" y2="422"/>
+            <line class="cls-1" x1="79.61" y1="445.6" x2="72.11" y2="441.1"/>
+          </g>
+          <g id="deco-bg-lines">
+            <rect class="cls-2" x="26.69" y="432.86" width="1.27" height="4.1" transform="translate(-407.09 463.03) rotate(-90)"/>
+            <rect class="cls-2" x="26.69" y="355.24" width="1.27" height="4.1" transform="translate(-329.48 385.42) rotate(-90)"/>
+            <rect class="cls-2" x="26.69" y="276.43" width="1.27" height="4.1" transform="translate(-250.66 306.61) rotate(-90)"/>
+            <rect class="cls-2" x="26.69" y="198.87" width="1.27" height="4.1" transform="translate(-173.1 229.04) rotate(-90)"/>
+            <rect class="cls-2" x="26.69" y="120.06" width="1.27" height="4.1" transform="translate(-94.29 150.23) rotate(-90)"/>
+            <rect class="cls-2" x="26.69" y="42.5" width="1.27" height="4.1" transform="translate(-16.73 72.67) rotate(-90)"/>
+            <g>
+              <rect class="cls-2" x="85.11" y="18.53" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="94.48" y="18.53" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="186.94" y="18.58" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="196.31" y="18.58" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="289.24" y="18.51" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="298.61" y="18.51" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="391.36" y="18.51" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="400.73" y="18.51" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="494.11" y="18.51" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="503.48" y="18.51" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="595.75" y="18.51" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="605.12" y="18.51" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="698.46" y="18.51" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="707.83" y="18.51" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="202.35" y="398.54" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="211.72" y="398.54" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="304.17" y="398.6" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="313.54" y="398.6" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="406.47" y="398.53" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="415.84" y="398.53" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="508.59" y="398.53" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="517.96" y="398.53" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="611.35" y="398.53" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="620.72" y="398.53" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="712.98" y="398.53" width="1.19" height="4.38"/>
+              <rect class="cls-2" x="722.36" y="398.53" width="1.19" height="4.38"/>
+            </g>
+            <g>
+              <rect class="cls-2" x="202.34" y="414.05" width="1.19" height="4.38"/>
+              <polyline class="cls-2" points="212.91 418.43 211.72 418.43 211.72 414.05 212.91 414.05"/>
+            </g>
+            <rect class="cls-2" x="301.24" y="414.73" width="1.19" height="4.38"/>
+            <rect class="cls-2" x="403.54" y="414.66" width="1.19" height="4.38"/>
+            <rect class="cls-2" x="505.66" y="414.66" width="1.19" height="4.38"/>
+            <rect class="cls-2" x="608.42" y="414.66" width="1.19" height="4.38"/>
+            <rect class="cls-2" x="710.05" y="414.66" width="1.19" height="4.38"/>
+          </g>
+          <g id="clock-lines">
+            <polygon class="cls-3" points="762.24 326.44 193.07 326.44 193.07 178.16 165.57 178.16 166.41 107.72 298.07 107.72 305.99 127.18 762.24 127.18 762.24 326.44"/>
+            <g>
+              <rect class="cls-4" x="217.57" y="330.61" width="1" height="8.34"/>
+              <rect class="cls-4" x="221.74" y="330.61" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect class="cls-4" x="305.91" y="330.61" width="1" height="8.34"/>
+              <rect class="cls-4" x="310.07" y="330.61" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect class="cls-4" x="399.24" y="330.61" width="1" height="8.34"/>
+              <rect class="cls-4" x="403.41" y="330.61" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect class="cls-4" x="508.41" y="330.61" width="1" height="8.34"/>
+              <rect class="cls-4" x="512.57" y="330.61" width="1" height="8.34"/>
+            </g>
+            <g>
+              <rect class="cls-4" x="605.91" y="330.61" width="1" height="8.34"/>
+              <rect class="cls-4" x="610.07" y="330.61" width="1" height="8.34"/>
+            </g>
+            <text class="cls-5" transform="translate(397.66 240.25) scale(0.94 1)"><tspan class="cls-6">o</tspan><tspan class="cls-7" x="4.07" y="0">v</tspan><tspan x="7.6" y="0">e</tspan><tspan class="cls-8" x="11.36" y="0">r</tspan><tspan x="14.04" y="0">fl</tspan><tspan class="cls-9" x="17.97" y="0">o</tspan><tspan class="cls-10" x="22.04" y="0">w</tspan><tspan x="27.74" y="0">: hidden</tspan></text>
+          </g>
+        </svg>
+
+        <!-- 電源供給システムステータス -->
+        <div class="power-status-indicator">
+          <div class="power-status-title">POWER SUPPLY SYSTEM</div>
+          <div class="power-status-value" id="power-status-value">
+            <span class="power-icon">🔌</span>
+            <span id="power-status-text">EXTERNAL POWER CONNECTED</span>
+          </div>
+        </div>
+
+        <!-- 進行タイムライン -->
+        <div id="timeline-container" class="timeline-container">
+          <!-- JavaScriptで動的に生成 -->
+        </div>
+
+        <!-- 日付表示 -->
+        <div id="date">DATE</div>
+
+        <!-- 音声コントロールスピーカー -->
+        <span class="audio_control"><img src="images/audio-on.svg" alt="Audio Control"/></span>
+        
+        <!-- タイマー周りのエフェクトを描画するCanvas -->
+        <canvas id="particle-canvas" class="particle-canvas" style="display:none;"></canvas>
+        <!-- プログレスリング (今回は非表示にします) -->
+        <svg class="progress-ring-svg" id="progress-ring" viewBox="0 0 200 200" style="display:none;"></svg>
+      </section>
+
+
+      <!-- 設定・プリセットセクション -->
+      <section class="settings-section" id="settings-section">
+        <!-- プリセット選択 -->
+        <div class="settings-card presets-card">
+          <div class="hazard-stripe" style="margin-top: -28px; margin-bottom: 20px; width: calc(100% + 56px); margin-left: -28px;"></div>
+          <h3 class="card-title" data-kanji="おすすめセット" data-hiragana="おすすめセット">おすすめセット</h3>
+          <div class="preset-buttons">
+            <button class="preset-btn" data-preset="standard">
+              <span class="preset-icon">📚</span>
+              <div class="preset-info">
+                <span class="preset-name" data-kanji="かんじ・けいさんコース" data-hiragana="かんじ・けいさんコース">かんじ・けいさんコース</span>
+                <span class="preset-duration">計 12分</span>
+              </div>
+            </button>
+            <button class="preset-btn" data-preset="study-break">
+              <span class="preset-icon">☕</span>
+              <div class="preset-info">
+                <span class="preset-name" data-kanji="お勉強と休憩コース" data-hiragana="おべんきょうとやすみコース">お勉強と休憩コース</span>
+                <span class="preset-duration">計 17分</span>
+              </div>
+            </button>
+            <button class="preset-btn" data-preset="free-time">
+              <span class="preset-icon">🎉</span>
+              <div class="preset-info">
+                <span class="preset-name" data-kanji="じゆうじかん＆お片付け" data-hiragana="じゆうじかん＆おかたづけ">じゆうじかん＆お片付け</span>
+                <span class="preset-duration">計 18分</span>
+              </div>
+            </button>
+            <button class="preset-btn" data-preset="test">
+              <span class="preset-icon">⏱️</span>
+              <div class="preset-info">
+                <span class="preset-name" data-kanji="おためし（10秒ずつ）" data-hiragana="おためし（10びょうずつ）">おためし（10秒ずつ）</span>
+                <span class="preset-duration">計 30秒</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- タイマースケジュール設定 -->
+        <div class="settings-card schedule-card">
+          <div class="hazard-stripe" style="margin-top: -28px; margin-bottom: 20px; width: calc(100% + 56px); margin-left: -28px;"></div>
+          <h3 class="card-title" data-kanji="じかんの順番（じゅんばん）" data-hiragana="じかんのじゅんばん">じかんの順番（じゅんばん）</h3>
+          
+          <!-- スケジュールリスト -->
+          <div id="schedule-list" class="schedule-list">
+            <!-- JavaScriptで動的に生成 -->
+          </div>
+
+          <!-- 新規追加フォーム -->
+          <form id="add-task-form" class="add-task-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="new-task-kanji" data-kanji="なまえ（漢字）" data-hiragana="なまえ（かんじ）">なまえ（漢字）</label>
+                <input type="text" id="new-task-kanji" placeholder="例: 漢字の練習" required maxlength="12">
+              </div>
+              <div class="form-group">
+                <label for="new-task-hiragana" data-kanji="なまえ（ひらがな）" data-hiragana="なまえ（ひらがな）">なまえ（ひらがな）</label>
+                <input type="text" id="new-task-hiragana" placeholder="例: かんじのれんしゅう" required maxlength="18">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group size-half">
+                <label for="new-task-minutes" data-kanji="時間（分）" data-hiragana="じかん（ぷん）">時間（分）</label>
+                <input type="number" id="new-task-minutes" min="0" max="60" value="5" required>
+              </div>
+              <div class="form-group size-half">
+                <label for="new-task-seconds" data-kanji="時間（秒）" data-hiragana="じかん（びょう）">時間（秒）</label>
+                <input type="number" id="new-task-seconds" min="0" max="59" value="0" required>
+              </div>
+            </div>
+            <!-- クイック時間選択ボタン -->
+            <div class="quick-time-buttons">
+              <button type="button" class="quick-time-btn" data-time="1">1分</button>
+              <button type="button" class="quick-time-btn" data-time="3">3分</button>
+              <button type="button" class="quick-time-btn" data-time="5">5分</button>
+              <button type="button" class="quick-time-btn" data-time="10">10分</button>
+            </div>
+            <!-- 色テーマ選択（各タスクに個性を与える） -->
+            <div class="theme-picker">
+              <span class="picker-label" data-kanji="カラーテーマ" data-hiragana="いろテーマ">カラーテーマ</span>
+              <div class="theme-options">
+                <label class="theme-radio cyan" title="シアン">
+                  <input type="radio" name="task-theme" value="theme-cyan" checked>
+                  <span class="radio-dot"></span>
+                </label>
+                <label class="theme-radio magenta" title="マゼンタ">
+                  <input type="radio" name="task-theme" value="theme-magenta">
+                  <span class="radio-dot"></span>
+                </label>
+                <label class="theme-radio yellow" title="イエロー">
+                  <input type="radio" name="task-theme" value="theme-yellow">
+                  <span class="radio-dot"></span>
+                </label>
+                <label class="theme-radio green" title="グリーン">
+                  <input type="radio" name="task-theme" value="theme-green">
+                  <span class="radio-dot"></span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="ui-btn primary-btn add-btn">
+              <span class="btn-icon">➕</span>
+              <span class="btn-text" data-kanji="じかんを追加する" data-hiragana="じかんをついかする">じかんを追加する</span>
+            </button>
+          </form>
+        </div>
+
+        <!-- オプション設定 -->
+        <div class="settings-card options-card">
+          <div class="hazard-stripe" style="margin-top: -28px; margin-bottom: 20px; width: calc(100% + 56px); margin-left: -28px;"></div>
+          <h3 class="card-title" data-kanji="オプション" data-hiragana="オプション">オプション</h3>
+          <div class="option-items">
+            <label class="option-switch">
+              <input type="checkbox" id="loop-switch" checked>
+              <span class="switch-slider"></span>
+              <span class="switch-label" data-kanji="さいごまで終わったらループする" data-hiragana="さいごまでおわったらループする">さいごまで終わったらループする</span>
+            </label>
+            <label class="option-switch">
+              <input type="checkbox" id="pulse-switch" checked>
+              <span class="switch-slider"></span>
+              <span class="switch-label" data-kanji="残り10秒で画面をドキドキさせる" data-hiragana="のこり10びょうでがめんをドキドキさせる">残り10秒で画面をドキドキさせる</span>
+            </label>
+            <label class="option-switch">
+              <input type="checkbox" id="countdown-sound-switch" checked>
+              <span class="switch-slider"></span>
+              <span class="switch-label" data-kanji="残り3秒でカウントダウン音を鳴らす" data-hiragana="のこり3びょうでカウントダウンおとをならす">残り3秒でカウントダウン音を鳴らす</span>
+            </label>
+            <div class="sound-select-group">
+              <label for="chime-select" data-kanji="切り替えの音：" data-hiragana="きりかえのおと：">切り替えの音：</label>
+              <select id="chime-select">
+                <option value="fanfare-heroic" selected>🦸 ヒーローファンファーレ</option>
+                <option value="retro-game">🎮 レトロピコピコゲーム音</option>
+                <option value="school-bell">🔔 学校のキーンコーンカーンコーン</option>
+                <option value="magic-sparkle">✨ まほうのきらきら音</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- JavaScript ロジックの埋め込み -->
+  <script>
+    /* ==========================================================================
+       NERV公式風「メカニカルSVGタイマー」アプリケーション・ロジック
        ========================================================================== */
 
     function debugLog(msg, color = null) {
       console.log(msg);
     }
 
-    debugLog("噫 繧､繝ｳ繝ｩ繧､繝ｳJavaScript縺ｮ螳溯｡後ｒ髢句ｧ九＠縺ｾ縺励◆");
+    debugLog("🚀 インラインJavaScriptの実行を開始しました");
 
-    // 1. 螳壽焚縺ｨ繝・ヵ繧ｩ繝ｫ繝郁ｨｭ螳・    const DEFAULT_TASKS = [
-      { id: 't1', nameKanji: '貍｢蟄励・邱ｴ鄙・, nameHiragana: '縺九ｓ縺倥・繧後ｓ縺励ｅ縺・, duration: 300, theme: 'theme-cyan' },
-      { id: 't2', nameKanji: '縺｡繧・≧縺代＞・井ｼ第・・・, nameHiragana: '繧・☆縺ｿ縺倥°繧・, duration: 120, theme: 'theme-magenta' },
-      { id: 't3', nameKanji: '險育ｮ励・邱ｴ鄙・, nameHiragana: '縺代＞縺輔ｓ縺ｮ繧後ｓ縺励ｅ縺・, duration: 300, theme: 'theme-yellow' }
+    // 1. 定数とデフォルト設定
+    const DEFAULT_TASKS = [
+      { id: 't1', nameKanji: '漢字の練習', nameHiragana: 'かんじのれんしゅう', duration: 300, theme: 'theme-cyan' },
+      { id: 't2', nameKanji: 'ちゅうけい（休憩）', nameHiragana: 'やすみじかん', duration: 120, theme: 'theme-magenta' },
+      { id: 't3', nameKanji: '計算の練習', nameHiragana: 'けいさんのれんしゅう', duration: 300, theme: 'theme-yellow' }
     ];
 
     const PRESETS = {
       'standard': [
-        { nameKanji: '貍｢蟄励・邱ｴ鄙・, nameHiragana: '縺九ｓ縺倥・繧後ｓ縺励ｅ縺・, minutes: 5, seconds: 0, theme: 'theme-cyan' },
-        { nameKanji: '繧・☆縺ｿ譎る俣', nameHiragana: '繧・☆縺ｿ縺倥°繧・, minutes: 2, seconds: 0, theme: 'theme-magenta' },
-        { nameKanji: '險育ｮ励・邱ｴ鄙・, nameHiragana: '縺代＞縺輔ｓ縺ｮ繧後ｓ縺励ｅ縺・, minutes: 5, seconds: 0, theme: 'theme-yellow' }
+        { nameKanji: '漢字の練習', nameHiragana: 'かんじのれんしゅう', minutes: 5, seconds: 0, theme: 'theme-cyan' },
+        { nameKanji: 'やすみ時間', nameHiragana: 'やすみじかん', minutes: 2, seconds: 0, theme: 'theme-magenta' },
+        { nameKanji: '計算の練習', nameHiragana: 'けいさんのれんしゅう', minutes: 5, seconds: 0, theme: 'theme-yellow' }
       ],
       'study-break': [
-        { nameKanji: '蝗ｽ隱槭・縺雁級蠑ｷ', nameHiragana: '縺薙￥縺斐・縺翫∋繧薙″繧・≧', minutes: 10, seconds: 0, theme: 'theme-cyan' },
-        { nameKanji: '縺ｮ縺ｳ縺ｮ縺ｳ莨第・', nameHiragana: '縺ｮ縺ｳ縺ｮ縺ｳ繧・☆縺ｿ', minutes: 5, seconds: 0, theme: 'theme-magenta' },
-        { nameKanji: '邂玲焚縺ｮ繝・せ繝・, nameHiragana: '縺輔ｓ縺吶≧縺ｮ繝・せ繝・, minutes: 2, seconds: 0, theme: 'theme-yellow' }
+        { nameKanji: '国語のお勉強', nameHiragana: 'こくごのおべんきょう', minutes: 10, seconds: 0, theme: 'theme-cyan' },
+        { nameKanji: 'のびのび休憩', nameHiragana: 'のびのびやすみ', minutes: 5, seconds: 0, theme: 'theme-magenta' },
+        { nameKanji: '算数のテスト', nameHiragana: 'さんすうのテスト', minutes: 2, seconds: 0, theme: 'theme-yellow' }
       ],
       'free-time': [
-        { nameKanji: '閾ｪ逕ｱ譎る俣・・, nameHiragana: '縺倥ｆ縺・§縺九ｓ・・, minutes: 15, seconds: 0, theme: 'theme-green' },
-        { nameKanji: '縺翫°縺溘▼縺・, nameHiragana: '縺翫°縺溘▼縺・, minutes: 3, seconds: 0, theme: 'theme-magenta' }
+        { nameKanji: '自由時間！', nameHiragana: 'じゆうじかん！', minutes: 15, seconds: 0, theme: 'theme-green' },
+        { nameKanji: 'おかたづけ', nameHiragana: 'おかたづけ', minutes: 3, seconds: 0, theme: 'theme-magenta' }
       ],
       'test': [
-        { nameKanji: '貍｢蟄暦ｼ医ユ繧ｹ繝茨ｼ・, nameHiragana: '縺九ｓ縺假ｼ医※縺吶→・・, minutes: 0, seconds: 10, theme: 'theme-cyan' },
-        { nameKanji: '莨第・・医ユ繧ｹ繝茨ｼ・, nameHiragana: '繧・☆縺ｿ・医※縺吶→・・, minutes: 0, seconds: 10, theme: 'theme-magenta' },
-        { nameKanji: '險育ｮ暦ｼ医ユ繧ｹ繝茨ｼ・, nameHiragana: '縺代＞縺輔ｓ・医※縺吶→・・, minutes: 0, seconds: 10, theme: 'theme-yellow' }
+        { nameKanji: '漢字（テスト）', nameHiragana: 'かんじ（てすと）', minutes: 0, seconds: 10, theme: 'theme-cyan' },
+        { nameKanji: '休憩（テスト）', nameHiragana: 'やすみ（てすと）', minutes: 0, seconds: 10, theme: 'theme-magenta' },
+        { nameKanji: '計算（テスト）', nameHiragana: 'けいさん（てすと）', minutes: 0, seconds: 10, theme: 'theme-yellow' }
       ]
     };
 
-    // 2. 繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ迥ｶ諷句､画焚
+    // 2. アプリケーション状態変数
     let tasks = [];
     let currentTaskIndex = 0;
-    let remainingMs = 0;      // 繝溘Μ遘堤ｮ｡逅・∈螟画峩
-    let totalDuration = 0;    // 遘貞腰菴・    let isPaused = true;
+    let remainingMs = 0;      // ミリ秒管理へ変更
+    let totalDuration = 0;    // 秒単位
+    let isPaused = true;
     let isHiragana = false;
     let volume = 0.7;
     let isMuted = false;
     let loopEnabled = true;
     let pulseEnabled = true;
     let countdownSoundEnabled = true;
-    let isBeastMode = false;  // BEAST繝｢繝ｼ繝峨ヵ繝ｩ繧ｰ
+    let isBeastMode = false;  // BEASTモードフラグ
 
     let timerId = null;
     let lastTimestamp = 0;
     
     let audioCtx = null;
-    let beastAudio = null;    // 證ｴ襍ｰBGM繧ｪ繝ｼ繝・ぅ繧ｪ繧ｪ繝悶ず繧ｧ繧ｯ繝・
+    let beastAudio = null;    // 暴走BGMオーディオオブジェクト
+
     let particleCanvas, particleCtx;
     let ambientCanvas, ambientCtx;
     let particles = [];
@@ -79,7 +1743,7 @@
         skipBtn: document.getElementById('skip-btn'),
         resetBtn: document.getElementById('reset-btn'),
         beastBtn: document.getElementById('beast-btn'),
-        fullscreenBtn: document.getElementById('fullscreen-btn'), // 螳溯ｳｪ繝繝溘・
+        fullscreenBtn: document.getElementById('fullscreen-btn'), // 実質ダミー
         langToggleBtn: document.getElementById('lang-toggle-btn'),
         langToggleText: document.getElementById('lang-toggle-text'),
         appTitle: document.getElementById('app-title'),
@@ -105,7 +1769,8 @@
       };
     }
 
-    // 蛻晄悄蛹・    window.addEventListener('DOMContentLoaded', () => {
+    // 初期化
+    window.addEventListener('DOMContentLoaded', () => {
       try {
         initDOM();
         setupCanvas();
@@ -113,9 +1778,9 @@
         setupEventListeners();
         updateUI();
         animate();
-        debugLog("脂 繧ｷ繧ｹ繝・Β襍ｷ蜍募ｮ御ｺ・ｼ・);
+        debugLog("🎉 システム起動完了！");
       } catch (err) {
-        console.error("蛻晄悄蛹悶お繝ｩ繝ｼ:", err);
+        console.error("初期化エラー:", err);
       }
     });
 
@@ -195,14 +1860,14 @@
     function initAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        debugLog("矧 AudioContext 繧貞・譛溷喧縺励∪縺励◆");
+        debugLog("🔊 AudioContext を初期化しました");
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
     }
 
-    // 髻ｳ髻ｿ蜷域・繧ｨ繝ｳ繧ｸ繝ｳ
+    // 音響合成エンジン
     function playCymbalCrash(duration = 1.0, volumeVal = 0.22) {
       if (isMuted || volume === 0) return;
       try {
@@ -333,7 +1998,7 @@
     }
 
     function playTransitionSound(type) {
-      debugLog("七 蜉ｹ譫憺浹蜀咲函: " + type);
+      debugLog("🎵 効果音再生: " + type);
       switch (type) {
         case 'eva-buzzer':
           playEvangellionBuzzerProgress();
@@ -441,7 +2106,7 @@
       }, 350);
     }
 
-    // 繝上ル繧ｫ繝閭梧勹
+    // ハニカム背景
     let textScrollX = 0;
     
     function drawHoneycombGrid(ctx, w, h, size) {
@@ -487,7 +2152,7 @@
       textScrollX -= isBeastMode ? 2.5 : 0.6;
       if (textScrollX < -w * 2.5) textScrollX = 0;
       
-      const text = isRedAlert ? "WARNING   EMERGENCY   豢ｻ蜍暮剞逡・  WARNING   EMERGENCY   豢ｻ蜍暮剞逡・  " : "SYSTEM ACTIVE   MONITORING   INTERNAL SYSTEM   MONITORING   ";
+      const text = isRedAlert ? "WARNING   EMERGENCY   活動限界   WARNING   EMERGENCY   活動限界   " : "SYSTEM ACTIVE   MONITORING   INTERNAL SYSTEM   MONITORING   ";
       
       ctx.fillText(text, textScrollX, h * 0.18);
       ctx.fillText(text, -textScrollX - w, h * 0.82);
@@ -505,7 +2170,7 @@
       drawWarningScrollTexts(ambientCtx, w, h);
     }
 
-    // 繝代・繝・ぅ繧ｯ繝ｫ貍泌・
+    // パーティクル演出
     function spawnSpark(x, y, colorClass) {
       let color = '#ff5500';
       if (colorClass === 'theme-magenta') color = '#ff003c';
@@ -731,21 +2396,21 @@
       animationFrameId = requestAnimationFrame(animate);
     }
 
-    // 繧ｿ繧､繝槭・蛻ｶ蠕｡
+    // タイマー制御
     function startTimer() {
       if (tasks.length === 0) return;
       
       document.body.classList.add('internal-battery-mode');
       if (DOM.powerStatusText) {
-        DOM.powerStatusText.textContent = isHiragana ? '縺ｪ縺・・縺ｧ繧薙￡繧・繝峨・繧ｵ荳ｭ (LIMIT)' : 'INTERNAL BATTERY ACTIVE';
+        DOM.powerStatusText.textContent = isHiragana ? 'ないぶでんげん ドーサ中 (LIMIT)' : 'INTERNAL BATTERY ACTIVE';
       }
       if (DOM.powerStatusValue) {
-        DOM.powerStatusValue.querySelector('.power-icon').textContent = '萩';
+        DOM.powerStatusValue.querySelector('.power-icon').textContent = '🔋';
       }
       
       const currentTask = tasks[currentTaskIndex];
       if (remainingMs === totalDuration * 1000 && isPaused) {
-        triggerEvaAlert(isHiragana ? '縺・￥縺橸ｼ・ : '繧ｹ繧ｿ繝ｼ繝茨ｼ・);
+        triggerEvaAlert(isHiragana ? 'いくぞ！' : 'スタート！');
         spawnShockwave(0, 0, currentTask.theme);
       }
       
@@ -770,10 +2435,10 @@
       
       document.body.classList.remove('internal-battery-mode');
       if (DOM.powerStatusText) {
-        DOM.powerStatusText.textContent = isHiragana ? '縺後＞縺ｶ縺ｧ繧薙￡繧・繧ｻ繝・だ繧ｯ荳ｭ' : 'EXTERNAL POWER CONNECTED';
+        DOM.powerStatusText.textContent = isHiragana ? 'がいぶでんげん セツゾク中' : 'EXTERNAL POWER CONNECTED';
       }
       if (DOM.powerStatusValue) {
-        DOM.powerStatusValue.querySelector('.power-icon').textContent = '伯';
+        DOM.powerStatusValue.querySelector('.power-icon').textContent = '🔌';
       }
       
       if (DOM.playPauseBtn) {
@@ -786,7 +2451,8 @@
     function runTimerLoop(timestamp) {
       if (isPaused) return;
       
-      // BEAST繝｢繝ｼ繝画凾縺ｯ10蛟埼溘〒騾ｲ陦・      const multiplier = isBeastMode ? 10 : 1;
+      // BEASTモード時は10倍速で進行
+      const multiplier = isBeastMode ? 10 : 1;
       const delta = (timestamp - lastTimestamp) * multiplier;
       lastTimestamp = timestamp;
       
@@ -828,7 +2494,7 @@
       
       spawnShockwave(0, 0, completedTask.theme);
       
-      // BEAST繝｢繝ｼ繝峨↑繧牙ｮ御ｺ・凾縺ｫ蜊ｳ蠎ｧ縺ｫ隗｣髯､
+      // BEASTモードなら完了時に即座に解除
       if (isBeastMode) {
         disableBeastMode();
       }
@@ -839,7 +2505,7 @@
         const nextTask = tasks[nextIndex];
         alertText = isHiragana ? nextTask.nameHiragana : nextTask.nameKanji;
       } else {
-        alertText = loopEnabled ? (isHiragana ? '繧ゅ≧縺・▲縺九＞・・ : '譛蛻昴°繧峨Ν繝ｼ繝暦ｼ・) : (isHiragana ? '縺九▽縺ｩ縺・￡繧薙°縺・ : '豢ｻ蜍暮剞逡・);
+        alertText = loopEnabled ? (isHiragana ? 'もういっかい！' : '最初からループ！') : (isHiragana ? 'かつどうげんかい' : '活動限界');
       }
       triggerEvaAlert(alertText);
       
@@ -869,7 +2535,7 @@
 
     function alertUserAllDone() {
       updateUI();
-      triggerEvaAlert(isHiragana ? '縺九▽縺ｩ縺・￡繧薙°縺・ : '豢ｻ蜍暮剞逡・);
+      triggerEvaAlert(isHiragana ? 'かつどうげんかい' : '活動限界');
       setTimeout(() => {
         if (DOM.chimeSelect) {
           playTransitionSound(DOM.chimeSelect.value);
@@ -877,7 +2543,7 @@
       }, 500);
     }
 
-    // 繧ｿ繧ｹ繧ｯ隱ｭ霎ｼ
+    // タスク読込
     function loadTask(index) {
       if (index < 0 || index >= tasks.length) return;
       currentTaskIndex = index;
@@ -916,8 +2582,8 @@
       updateTimeline();
       
       if (tasks.length === 0) {
-        if (DOM.currentTaskTitle) DOM.currentTaskTitle.textContent = isHiragana ? '繧ｿ繧､繝槭・繧偵＞繧後ｈ縺・ｼ・ : '繧ｿ繧､繝槭・繧定ｿｽ蜉縺励ｈ縺・ｼ・;
-        if (DOM.taskBadge) DOM.taskBadge.textContent = isHiragana ? '縺倥ｅ繧薙・荳ｭ' : '貅門ｙ荳ｭ';
+        if (DOM.currentTaskTitle) DOM.currentTaskTitle.textContent = isHiragana ? 'タイマーをいれよう！' : 'タイマーを追加しよう！';
+        if (DOM.taskBadge) DOM.taskBadge.textContent = isHiragana ? 'じゅんび中' : '準備中';
         return;
       }
       
@@ -928,7 +2594,7 @@
         DOM.currentTaskTitle.textContent = isHiragana ? currentTask.nameHiragana : currentTask.nameKanji;
       }
       if (DOM.taskBadge) {
-        DOM.taskBadge.textContent = isHiragana ? `縺倥°繧・${currentTaskIndex + 1}/${tasks.length}` : `譎る俣 ${currentTaskIndex + 1}/${tasks.length}`;
+        DOM.taskBadge.textContent = isHiragana ? `じかん ${currentTaskIndex + 1}/${tasks.length}` : `時間 ${currentTaskIndex + 1}/${tasks.length}`;
       }
     }
 
@@ -947,7 +2613,7 @@
       DOM.clockMinute.textContent = secStr;
       DOM.clockSecond.textContent = centiStr;
       
-      // 譎りｨ・譌･莉倥・陦ｨ遉ｺ譖ｴ譁ｰ
+      // 時計/日付の表示更新
       const now = new Date();
       const timeStr = String(now.getHours()).padStart(2, '0') + "/" + String(now.getMinutes()).padStart(2, '0') + "/" + String(now.getSeconds()).padStart(2, '0');
       const dateText = document.getElementById('date');
@@ -966,8 +2632,8 @@
         
         const minutes = Math.floor(task.duration / 60);
         const seconds = task.duration % 60;
-        const timeString = minutes + '蛻・ + (seconds > 0 ? seconds + '遘・ : '');
-        const timeStringHiragana = minutes + '縺ｵ繧・ + (seconds > 0 ? seconds + '縺ｳ繧・≧' : '');
+        const timeString = minutes + '分' + (seconds > 0 ? seconds + '秒' : '');
+        const timeStringHiragana = minutes + 'ふん' + (seconds > 0 ? seconds + 'びょう' : '');
         
         const taskName = isHiragana ? task.nameHiragana : task.nameKanji;
         const durationLabel = isHiragana ? timeStringHiragana : timeString;
@@ -979,9 +2645,9 @@
             <span class="item-duration">${durationLabel}</span>
           </div>
           <div class="schedule-item-actions">
-            <button class="action-btn move-up-btn" data-index="${idx}" title="荳翫∈遘ｻ蜍・ aria-label="荳翫∈遘ｻ蜍・>笆ｲ</button>
-            <button class="action-btn move-down-btn" data-index="${idx}" title="荳九∈遘ｻ蜍・ aria-label="荳九∈遘ｻ蜍・>笆ｼ</button>
-            <button class="action-btn delete-btn" data-index="${idx}" title="蜑企勁縺吶ｋ" aria-label="蜑企勁縺吶ｋ">卵・・/button>
+            <button class="action-btn move-up-btn" data-index="${idx}" title="上へ移動" aria-label="上へ移動">▲</button>
+            <button class="action-btn move-down-btn" data-index="${idx}" title="下へ移動" aria-label="下へ移動">▼</button>
+            <button class="action-btn delete-btn" data-index="${idx}" title="削除する" aria-label="削除する">🗑️</button>
           </div>
         `;
         
@@ -1014,9 +2680,9 @@
         
         let indicatorHtml = '';
         if (status === 'past') {
-          indicatorHtml = '<span class="step-indicator">笨・/span>';
+          indicatorHtml = '<span class="step-indicator">✓</span>';
         } else if (status === 'active') {
-          indicatorHtml = '<span class="step-indicator font-play">笆ｶ</span>';
+          indicatorHtml = '<span class="step-indicator font-play">▶</span>';
         } else {
           indicatorHtml = `<span class="step-indicator">${idx + 1}</span>`;
         }
@@ -1042,14 +2708,14 @@
       );
     }
 
-    // BEAST (證ｴ襍ｰ) 繝｢繝ｼ繝牙宛蠕｡
+    // BEAST (暴走) モード制御
     function toggleBeastMode() {
       isBeastMode = !isBeastMode;
       
       if (isBeastMode) {
         document.body.classList.add('beast-active');
         if (DOM.beastBtn) DOM.beastBtn.classList.add('active');
-        triggerEvaAlert(isHiragana ? '繝薙・繧ｹ繝医Δ繝ｼ繝会ｼ・ : 'THE BEAST');
+        triggerEvaAlert(isHiragana ? 'ビーストモード！' : 'THE BEAST');
         
         if (volume > 0 && !isMuted) {
           try {
@@ -1067,7 +2733,7 @@
         }
       } else {
         disableBeastMode();
-        triggerEvaAlert(isHiragana ? '繝薙・繧ｹ繝郁ｧ｣髯､' : 'BEAST CANCEL');
+        triggerEvaAlert(isHiragana ? 'ビースト解除' : 'BEAST CANCEL');
       }
     }
 
@@ -1139,9 +2805,9 @@
           if (beastAudio) beastAudio.volume = volume;
           if (volume > 0) {
             isMuted = false;
-            if (DOM.muteIcon) DOM.muteIcon.textContent = '矧';
+            if (DOM.muteIcon) DOM.muteIcon.textContent = '🔊';
           } else {
-            if (DOM.muteIcon) DOM.muteIcon.textContent = '這';
+            if (DOM.muteIcon) DOM.muteIcon.textContent = '🔇';
           }
         });
       }
@@ -1150,17 +2816,17 @@
         DOM.muteBtn.addEventListener('click', () => {
           isMuted = !isMuted;
           if (isMuted) {
-            if (DOM.muteIcon) DOM.muteIcon.textContent = '這';
+            if (DOM.muteIcon) DOM.muteIcon.textContent = '🔇';
             if (beastAudio) beastAudio.muted = true;
           } else {
-            if (DOM.muteIcon) DOM.muteIcon.textContent = volume > 0 ? '矧' : '這';
+            if (DOM.muteIcon) DOM.muteIcon.textContent = volume > 0 ? '🔊' : '🔇';
             if (beastAudio) beastAudio.muted = false;
             playTone(600, 0.05, 'sine', 0.2);
           }
         });
       }
 
-      // NERV繧ｿ繧､繝槭・縺ｮ繝輔Ξ繝ｼ繝驛ｨ蛻・・繧ｯ繝ｪ繝・け縺ｧ繝輔Ν繧ｹ繧ｯ繝ｪ繝ｼ繝ｳ蛻・崛
+      // NERVタイマーのフレーム部分のクリックでフルスクリーン切替
       const timerContainer = document.getElementById('timer-section');
       if (timerContainer) {
         timerContainer.addEventListener('click', (e) => {
@@ -1225,7 +2891,7 @@
           
           const duration = min * 60 + sec;
           if (duration <= 0) {
-            alert(isHiragana ? '譎る俣縺ｯ1遘剃ｻ･荳翫↓縺励※縺上□縺輔＞・・ : '譎る俣縺ｯ1遘剃ｻ･荳翫↓險ｭ螳壹＠縺ｦ縺上□縺輔＞・・);
+            alert(isHiragana ? '時間は1秒以上にしてください！' : '時間は1秒以上に設定してください！');
             return;
           }
           
@@ -1377,10 +3043,10 @@
       });
 
       if (DOM.langToggleText) {
-        DOM.langToggleText.textContent = isHiragana ? '貍｢蟄暦ｼ医°繧薙§・峨↓縺吶ｋ' : '縺ｲ繧峨′縺ｪ 縺ｫ縺吶ｋ';
+        DOM.langToggleText.textContent = isHiragana ? '漢字（かんじ）にする' : 'ひらがな にする';
       }
       if (DOM.appTitle) {
-        DOM.appTitle.textContent = isHiragana ? '繝峨く繝峨く・√←縺ｯ縺ｧ繧ｿ繧､繝槭・' : '繝峨く繝峨く・√←縺ｯ縺ｧ繧ｿ繧､繝槭・';
+        DOM.appTitle.textContent = isHiragana ? 'ドキドキ！どはでタイマー' : 'ドキドキ！どはでタイマー';
       }
       if (DOM.fsHintOverlay) {
         DOM.fsHintOverlay.textContent = isHiragana ? DOM.fsHintOverlay.dataset.hiragana : DOM.fsHintOverlay.dataset.kanji;
@@ -1458,23 +3124,24 @@
         resizeCanvases();
       }
     });
-  </script>
 
-  <!-- 繧ｨ繝ｴ繧｡鬚ｨ繧ｷ繧ｹ繝・Β隴ｦ蜻翫・繝・・繧｢繝・・ -->
+</script>
+
+  <!-- エヴァ風システム警告ポップアップ -->
   <div id="eva-alert-popup" class="eva-alert-popup">
     <div class="explosion-flash"></div>
     <div class="emergency-hex-container">
       <div class="emergency-hex">
         <div class="hex-text-small">SYSTEM WARNING</div>
-        <div class="hex-text-large" id="eva-alert-text">豢ｻ蜍暮剞逡・/div>
+        <div class="hex-text-large" id="eva-alert-text">活動限界</div>
         <div class="hex-text-small">EMERGENCY</div>
       </div>
     </div>
   </div>
 
-  <!-- 蜈ｨ逕ｻ髱｢譎ゅ・謫堺ｽ懊ヲ繝ｳ繝・-->
-  <div id="fs-hint-overlay" class="fs-hint-overlay" data-kanji="繧ｹ繝壹・繧ｹ繧ｭ繝ｼ 縺ｧ 繧ｹ繧ｿ繝ｼ繝医・荳譎ょ●豁｢ | [Esc]繧ｭ繝ｼ 縺ｧ 繧ゅ←繧・ data-hiragana="繧ｹ繝壹・繧ｹ繧ｭ繝ｼ 縺ｧ 繧ｹ繧ｿ繝ｼ繝医・繧ｹ繝医ャ繝・| [Esc]繧ｭ繝ｼ 縺ｧ 繧ゅ←繧・>
-    繧ｹ繝壹・繧ｹ繧ｭ繝ｼ 縺ｧ 繧ｹ繧ｿ繝ｼ繝医・荳譎ょ●豁｢ | [Esc]繧ｭ繝ｼ 縺ｧ 繧ゅ←繧・
+  <!-- 全画面時の操作ヒント -->
+  <div id="fs-hint-overlay" class="fs-hint-overlay" data-kanji="スペースキー で スタート・一時停止 | [Esc]キー で もどる" data-hiragana="スペースキー で スタート・ストップ | [Esc]キー で もどる">
+    スペースキー で スタート・一時停止 | [Esc]キー で もどる
   </div>
 </body>
 </html>
